@@ -1,4 +1,13 @@
 APP_ROOT=~/Apps/Public
+declare -A configNameDBMap
+configNameDBMap["mt0-oauth2"]="oauthDB"
+configNameDBMap["mt1-proxy"]="proxyDB"
+configNameDBMap["mt2-user-profile"]="profileDB"
+configNameDBMap["mt3-product"]="productDB"
+configNameDBMap["mt4-messenger"]="messengerDB"
+configNameDBMap["mt5-file-upload"]="fileUploadDB"
+configNameDBMap["mt6-payment"]="paymentDB"
+
 declare -A configNameMap
 configNameMap["mt0-oauth2"]="AuthService"
 configNameMap["mt1-proxy"]="EdgeProxyService"
@@ -22,7 +31,11 @@ for i in "${!configNameMap[@]}"; do
   cp ./config/LICENSE $APP_ROOT/$i/LICENSE
   cp ./config/lombok.config $APP_ROOT/$i/lombok.config
   cp ./config/pom.xml $APP_ROOT/$i/shared/parent-pom.xml
+
   cp ./config/application-shared.properties $APP_ROOT/$i/src/main/resources/application-shared.properties
+  sed -i "s/{port_num}/${configPortMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
+  sed -i "s/{db_name}/${configNameDBMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
+
   cp -r ./src/main/java/com/hw/shared $APP_ROOT/$i/src/main/java/com/hw
   cp ./config/Dockerfile $APP_ROOT/$i/Dockerfile
   sed -i "s/{jar_name}/${configNameMap[$i]}.jar/g" $APP_ROOT/$i/Dockerfile

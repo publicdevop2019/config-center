@@ -6,7 +6,7 @@
     <groupId>org.example</groupId>
     <artifactId>config-center</artifactId>
     <version>0.0.0a</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <name>ConfigCenter</name>
     <description>This module does not get dependent on or inheritable</description>

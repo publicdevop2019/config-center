@@ -1,12 +1,12 @@
 APP_ROOT=~/Apps/Public
 declare -A configNameDBMap
-configNameDBMap["mt0-oauth2"]="oauthDB"
-configNameDBMap["mt1-proxy"]="proxyDB"
-configNameDBMap["mt2-user-profile"]="profileDB"
-configNameDBMap["mt3-product"]="productDB"
-configNameDBMap["mt4-messenger"]="messengerDB"
-configNameDBMap["mt5-file-upload"]="fileUploadDB"
-configNameDBMap["mt6-payment"]="paymentDB"
+configNameDBMap["mt0-oauth2"]="oauth"
+configNameDBMap["mt1-proxy"]="proxy"
+configNameDBMap["mt2-user-profile"]="profile"
+configNameDBMap["mt3-product"]="product"
+configNameDBMap["mt4-messenger"]="messenger"
+configNameDBMap["mt5-file-upload"]="fileUpload"
+configNameDBMap["mt6-payment"]="payment"
 
 declare -A configNameMap
 configNameMap["mt0-oauth2"]="AuthService"
@@ -34,7 +34,8 @@ for i in "${!configNameMap[@]}"; do
 
   cp ./config/application-shared.properties $APP_ROOT/$i/src/main/resources/application-shared.properties
   sed -i "s/{port_num}/${configPortMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
-  sed -i "s/{db_name}/${configNameDBMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
+  sed -i "s/{db_name}/${configNameDBMap[$i]}DB/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
+  sed -i "s/{name}/${configNameDBMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
 
   cp -r ./src/main/java/com/hw/shared $APP_ROOT/$i/src/main/java/com/hw
   cp ./config/Dockerfile $APP_ROOT/$i/Dockerfile

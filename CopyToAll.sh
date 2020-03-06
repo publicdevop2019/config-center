@@ -41,6 +41,8 @@ for i in "${!configNameMap[@]}"; do
   cp ./config/Dockerfile $APP_ROOT/$i/Dockerfile
   sed -i "s/{jar_name}/${configNameMap[$i]}.jar/g" $APP_ROOT/$i/Dockerfile
   sed -i "s/{port_num}/${configPortMap[$i]}/g" $APP_ROOT/$i/Dockerfile
-  cp ./config/logback-spring.xml $APP_ROOT/$i/src/main/resources/logback-spring.xml
-  sed -i "s/{log_file_name}/${configNameMap[$i]}/g" $APP_ROOT/$i/src/main/resources/logback-spring.xml
+  cp ./config/log4j2.xml $APP_ROOT/$i/src/main/resources/log4j2.xml
+#  cp ./config/logback-spring.xml $APP_ROOT/$i/src/main/resources/logback-spring.xml
+#  sed -i "s/{log_file_name}/${configNameMap[$i]}/g" $APP_ROOT/$i/src/main/resources/logback-spring.xml
+  sed -i "s/{log_file_name}/${configNameMap[$i]}/g" $APP_ROOT/$i/src/main/resources/log4j2.xml
 done

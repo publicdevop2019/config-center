@@ -2,7 +2,7 @@ APP_ROOT=~/Apps/Public
 declare -A configNameDBMap
 configNameDBMap["mt0-oauth2"]="oauth"
 configNameDBMap["mt1-proxy"]="proxy"
-configNameDBMap["mt2-user-profile"]="profile"
+configNameDBMap["mt2-user-profile"]="profileTest"
 configNameDBMap["mt3-product"]="product"
 configNameDBMap["mt4-messenger"]="messenger"
 configNameDBMap["mt5-file-upload"]="fileUpload"

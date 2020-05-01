@@ -46,10 +46,10 @@ for i in "${!configNameMap[@]}"; do
   sed -i "s/{db_name}/${configNameDBMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
   sed -i "s/{name}/${configAppNameMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
 
-  cp ./config/application-shared-hw.properties $APP_ROOT/$i/src/main/resources/application-shared-hw.properties
-  sed -i "s/{port_num}/${configPortMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared-hw.properties
-  sed -i "s/{db_name}/${configNameDBMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared-hw.properties
-  sed -i "s/{name}/${configAppNameMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared-hw.properties
+  cp ./config/application-shared-hw.properties $APP_ROOT/$i/build/hw/application-shared-hw.properties
+  sed -i "s/{port_num}/${configPortMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
+  sed -i "s/{db_name}/${configNameDBMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
+  sed -i "s/{name}/${configAppNameMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
 
   cp -r ./src/main/java/com/hw/shared $APP_ROOT/$i/src/main/java/com/hw
   cp ./config/Dockerfile $APP_ROOT/$i/Dockerfile

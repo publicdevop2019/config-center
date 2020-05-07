@@ -7,6 +7,7 @@ configNameDBMap["mt3-product"]="productDB"
 configNameDBMap["mt4-messenger"]="messengerDB"
 configNameDBMap["mt5-file-upload"]="fileUploadDB"
 configNameDBMap["mt6-payment"]="paymentDB"
+configNameDBMap["mt13-bbs"]="bbsDB"
 
 declare -A configAppNameMap
 configAppNameMap["mt0-oauth2"]="oauth"
@@ -16,6 +17,7 @@ configAppNameMap["mt3-product"]="product"
 configAppNameMap["mt4-messenger"]="messenger"
 configAppNameMap["mt5-file-upload"]="fileUpload"
 configAppNameMap["mt6-payment"]="payment"
+configAppNameMap["mt13-bbs"]="bbs"
 
 declare -A configNameMap
 configNameMap["mt0-oauth2"]="AuthService"
@@ -25,6 +27,7 @@ configNameMap["mt3-product"]="Product"
 configNameMap["mt4-messenger"]="Messenger"
 configNameMap["mt5-file-upload"]="FileUpload"
 configNameMap["mt6-payment"]="Payment"
+configNameMap["mt13-bbs"]="Bbs"
 
 declare -A configPortMap
 configPortMap["mt0-oauth2"]="8080"
@@ -34,6 +37,7 @@ configPortMap["mt3-product"]="8083"
 configPortMap["mt4-messenger"]="8085"
 configPortMap["mt5-file-upload"]="8086"
 configPortMap["mt6-payment"]="8087"
+configPortMap["mt13-bbs"]="8088"
 
 for i in "${!configNameMap[@]}"; do
   cp ./config/.gitignore $APP_ROOT/$i/.gitignore

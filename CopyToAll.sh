@@ -39,6 +39,16 @@ configPortMap["mt5-file-upload"]="8086"
 configPortMap["mt6-payment"]="8087"
 configPortMap["mt13-bbs"]="8088"
 
+declare -A configAppInstanceIdMap
+configAppInstanceIdMap["mt0-oauth2"]="0"
+configAppInstanceIdMap["mt1-proxy"]="1"
+configAppInstanceIdMap["mt2-user-profile"]="2"
+configAppInstanceIdMap["mt3-product"]="3"
+configAppInstanceIdMap["mt4-messenger"]="4"
+configAppInstanceIdMap["mt5-file-upload"]="5"
+configAppInstanceIdMap["mt6-payment"]="6"
+configAppInstanceIdMap["mt13-bbs"]="7"
+
 for i in "${!configNameMap[@]}"; do
   cp ./config/.gitignore $APP_ROOT/$i/.gitignore
   cp ./config/LICENSE $APP_ROOT/$i/LICENSE
@@ -49,11 +59,13 @@ for i in "${!configNameMap[@]}"; do
   sed -i "s/{port_num}/${configPortMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
   sed -i "s/{db_name}/${configNameDBMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
   sed -i "s/{name}/${configAppNameMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
+  sed -i "s/{instanceId}/${configAppInstanceIdMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
 
   cp ./config/application-shared-hw.properties $APP_ROOT/$i/build/hw/application-shared-hw.properties
   sed -i "s/{port_num}/${configPortMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
   sed -i "s/{db_name}/${configNameDBMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
   sed -i "s/{name}/${configAppNameMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
+  sed -i "s/{instanceId}/${configAppInstanceIdMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
 
   cp -r ./src/main/java/com/hw/shared $APP_ROOT/$i/src/main/java/com/hw
   cp ./config/Dockerfile $APP_ROOT/$i/Dockerfile

@@ -2,6 +2,7 @@ package com.hw.shared.idempotent.model;
 
 import com.hw.shared.sql.builder.SelectQueryBuilder;
 import com.hw.shared.sql.clause.SelectFieldStringEqualClause;
+import com.hw.shared.sql.clause.SelectFieldStringLikeClause;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

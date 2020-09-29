@@ -1,6 +1,6 @@
 declare -A configPathMap
-configPathMap["mt0-oauth2"]="mt0-oauth2"
-#configPathMap["mt1-proxy"]="mt1-proxy"
+#configPathMap["mt0-oauth2"]="mt0-oauth2"
+configPathMap["mt1-proxy"]="mt1-proxy"
 #configPathMap["mt2-user-profile"]="mt2-user-profile"
 #configPathMap["mt3-product"]="mt3-product"
 #configPathMap["mt4-messenger"]="mt4-messenger"

@@ -30,7 +30,7 @@ configNameMap["mt4-messenger"]="Messenger"
 configNameMap["mt5-file-upload"]="FileUpload"
 configNameMap["mt6-payment"]="Payment"
 configNameMap["mt13-bbs"]="Bbs"
-configNameMap["mt15-saga-orchestrator"]="SageOrchestrator"
+configNameMap["mt15-saga-orchestrator"]="SagaOrchestrator"
 
 declare -A configPortMap
 configPortMap["mt0-oauth2"]="8080"

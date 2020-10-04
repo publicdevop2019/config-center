@@ -75,6 +75,7 @@ for i in "${!configNameMap[@]}"; do
 #  rm -rf $APP_ROOT/$i/src/main/java/com/hw/shared
 #  cp -r ./src/main/java/com/hw/shared $APP_ROOT/$i/src/main/java/com/hw
   cp ./config/Dockerfile $APP_ROOT/$i/Dockerfile
+  cp ./config/settings.xml $APP_ROOT/$i/settings.xml
   sed -i "s/{jar_name}/${configNameMap[$i]}.jar/g" $APP_ROOT/$i/Dockerfile
   sed -i "s/{port_num}/${configPortMap[$i]}/g" $APP_ROOT/$i/Dockerfile
   cp ./config/log4j2.xml $APP_ROOT/$i/src/main/resources/log4j2.xml

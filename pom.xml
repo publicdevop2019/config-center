@@ -5,7 +5,7 @@
 
     <groupId>org.example</groupId>
     <artifactId>config-center</artifactId>
-    <version>0.0.0a</version>
+    <version>0.0.0-snapshot</version>
     <packaging>pom</packaging>
 
     <name>ConfigCenter</name>

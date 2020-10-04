@@ -71,8 +71,9 @@ for i in "${!configNameMap[@]}"; do
   sed -i "s/{db_name}/${configNameDBMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
   sed -i "s/{name}/${configAppNameMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
   sed -i "s/{instanceId}/${configAppInstanceIdMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
-  rm -rf $APP_ROOT/$i/src/main/java/com/hw/shared
-  cp -r ./src/main/java/com/hw/shared $APP_ROOT/$i/src/main/java/com/hw
+#  copy shared to all repos
+#  rm -rf $APP_ROOT/$i/src/main/java/com/hw/shared
+#  cp -r ./src/main/java/com/hw/shared $APP_ROOT/$i/src/main/java/com/hw
   cp ./config/Dockerfile $APP_ROOT/$i/Dockerfile
   sed -i "s/{jar_name}/${configNameMap[$i]}.jar/g" $APP_ROOT/$i/Dockerfile
   sed -i "s/{port_num}/${configPortMap[$i]}/g" $APP_ROOT/$i/Dockerfile

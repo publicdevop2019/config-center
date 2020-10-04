@@ -3,13 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
+    <groupId>com.hw</groupId>
     <artifactId>config-center</artifactId>
-    <version>0.0.0-snapshot</version>
+    <version>0.1.0</version>
     <packaging>pom</packaging>
 
     <name>ConfigCenter</name>
-    <description>This module does not get dependent on or inheritable</description>
+    <description>Shared between microservices</description>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -104,7 +104,7 @@
         <repository>
             <id>github</id>
             <name>GitHub OWNER Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/publivdevop2019/shared</url>
+            <url>https://maven.pkg.github.com/publicdevop2019/config-center</url>
         </repository>
     </distributionManagement>
 </project>

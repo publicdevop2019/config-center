@@ -54,6 +54,17 @@ configAppInstanceIdMap["mt6-payment"]="6"
 configAppInstanceIdMap["mt13-bbs"]="7"
 configAppInstanceIdMap["mt15-saga-orchestrator"]="8"
 
+declare -A configAppMQRoutingKeyMap
+configAppMQRoutingKeyMap["mt0-oauth2"]="scope:auth"
+configAppMQRoutingKeyMap["mt1-proxy"]="scope:auth"
+configAppMQRoutingKeyMap["mt2-user-profile"]="scope:mall"
+configAppMQRoutingKeyMap["mt3-product"]="scope:mall"
+configAppMQRoutingKeyMap["mt4-messenger"]="scope:mall"
+configAppMQRoutingKeyMap["mt5-file-upload"]="scope:none"
+configAppMQRoutingKeyMap["mt6-payment"]="scope:mall"
+configAppMQRoutingKeyMap["mt13-bbs"]="scope:bbs"
+configAppMQRoutingKeyMap["mt15-saga-orchestrator"]="scope:mall"
+
 for i in "${!configNameMap[@]}"; do
   cp ./config/.gitignore $APP_ROOT/$i/.gitignore
   cp ./config/LICENSE $APP_ROOT/$i/LICENSE
@@ -65,12 +76,16 @@ for i in "${!configNameMap[@]}"; do
   sed -i "s/{db_name}/${configNameDBMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
   sed -i "s/{name}/${configAppNameMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
   sed -i "s/{instanceId}/${configAppInstanceIdMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
+  sed -i "s/{queue_name}/${configAppNameMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
+  sed -i "s/{routing_key}/${configAppMQRoutingKeyMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
 
   cp ./config/application-shared-hw.properties $APP_ROOT/$i/build/hw/application-shared-hw.properties
   sed -i "s/{port_num}/${configPortMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
   sed -i "s/{db_name}/${configNameDBMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
   sed -i "s/{name}/${configAppNameMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
   sed -i "s/{instanceId}/${configAppInstanceIdMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
+  sed -i "s/{queue_name}/${configAppNameMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
+  sed -i "s/{routing_key}/${configAppMQRoutingKeyMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
 #  copy shared to all repos
   rm -rf $APP_ROOT/$i/src/main/java/com/hw/shared
   cp -r ./src/main/java/com/hw/shared $APP_ROOT/$i/src/main/java/com/hw

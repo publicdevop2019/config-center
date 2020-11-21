@@ -9,6 +9,7 @@ configNameDBMap["mt5-file-upload"]="fileUploadDB"
 configNameDBMap["mt6-payment"]="paymentDB"
 configNameDBMap["mt13-bbs"]="bbsDB"
 configNameDBMap["mt15-saga-orchestrator"]="txDB"
+configNameDBMap["mt17-object-store"]="objectDB"
 
 declare -A configAppNameMap
 configAppNameMap["mt0-oauth2"]="oauth"
@@ -20,6 +21,7 @@ configAppNameMap["mt5-file-upload"]="fileUpload"
 configAppNameMap["mt6-payment"]="payment"
 configAppNameMap["mt13-bbs"]="bbs"
 configAppNameMap["mt15-saga-orchestrator"]="saga"
+configAppNameMap["mt17-object-store"]="store"
 
 declare -A configNameMap
 configNameMap["mt0-oauth2"]="AuthService"
@@ -31,6 +33,7 @@ configNameMap["mt5-file-upload"]="FileUpload"
 configNameMap["mt6-payment"]="Payment"
 configNameMap["mt13-bbs"]="Bbs"
 configNameMap["mt15-saga-orchestrator"]="SagaOrchestrator"
+configNameMap["mt17-object-store"]="ObjectStore"
 
 declare -A configPortMap
 configPortMap["mt0-oauth2"]="8080"
@@ -42,6 +45,7 @@ configPortMap["mt5-file-upload"]="8086"
 configPortMap["mt6-payment"]="8087"
 configPortMap["mt13-bbs"]="8088"
 configPortMap["mt15-saga-orchestrator"]="8089"
+configPortMap["mt17-object-store"]="8090"
 
 declare -A configAppInstanceIdMap
 configAppInstanceIdMap["mt0-oauth2"]="0"
@@ -53,6 +57,7 @@ configAppInstanceIdMap["mt5-file-upload"]="5"
 configAppInstanceIdMap["mt6-payment"]="6"
 configAppInstanceIdMap["mt13-bbs"]="7"
 configAppInstanceIdMap["mt15-saga-orchestrator"]="8"
+configAppInstanceIdMap["mt17-object-store"]="9"
 
 declare -A configAppMQRoutingKeyMap
 configAppMQRoutingKeyMap["mt0-oauth2"]="scope:auth"
@@ -64,6 +69,7 @@ configAppMQRoutingKeyMap["mt5-file-upload"]="scope:none"
 configAppMQRoutingKeyMap["mt6-payment"]="scope:mall"
 configAppMQRoutingKeyMap["mt13-bbs"]="scope:bbs"
 configAppMQRoutingKeyMap["mt15-saga-orchestrator"]="scope:mall"
+configAppMQRoutingKeyMap["mt17-object-store"]="scope:none"
 
 for i in "${!configNameMap[@]}"; do
   cp ./config/.gitignore $APP_ROOT/$i/.gitignore
@@ -73,19 +79,17 @@ for i in "${!configNameMap[@]}"; do
 
   cp ./config/application-shared.properties $APP_ROOT/$i/src/main/resources/application-shared.properties
   sed -i "s/{port_num}/${configPortMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
-  sed -i "s/{db_name}/${configNameDBMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
   sed -i "s/{name}/${configAppNameMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
   sed -i "s/{instanceId}/${configAppInstanceIdMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
   sed -i "s/{queue_name}/${configAppNameMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
   sed -i "s/{routing_key}/${configAppMQRoutingKeyMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-shared.properties
 
-  cp ./config/application-shared-hw.properties $APP_ROOT/$i/build/hw/application-shared-hw.properties
-  sed -i "s/{port_num}/${configPortMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
-  sed -i "s/{db_name}/${configNameDBMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
-  sed -i "s/{name}/${configAppNameMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
-  sed -i "s/{instanceId}/${configAppInstanceIdMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
-  sed -i "s/{queue_name}/${configAppNameMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
-  sed -i "s/{routing_key}/${configAppMQRoutingKeyMap[$i]}/g" $APP_ROOT/$i/build/hw/application-shared-hw.properties
+  cp ./config/application-sql.properties $APP_ROOT/$i/src/main/resources/application-sql.properties
+  sed -i "s/{db_name}/${configNameDBMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-sql.properties
+
+  cp ./config/application-nosql.properties $APP_ROOT/$i/src/main/resources/application-nosql.properties
+  sed -i "s/{db_name}/${configNameDBMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-sql.properties
+
 #  copy shared to all repos
   rm -rf $APP_ROOT/$i/src/main/java/com/hw/shared
   cp -r ./src/main/java/com/hw/shared $APP_ROOT/$i/src/main/java/com/hw

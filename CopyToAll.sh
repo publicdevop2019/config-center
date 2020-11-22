@@ -33,7 +33,8 @@ configNameMap["mt5-file-upload"]="FileUpload"
 configNameMap["mt6-payment"]="Payment"
 configNameMap["mt13-bbs"]="Bbs"
 configNameMap["mt15-saga-orchestrator"]="SagaOrchestrator"
-configNameMap["mt17-object-store"]="ObjectStore"
+# exclude object store
+#configNameMap["mt17-object-store"]="ObjectStore"
 
 declare -A configPortMap
 configPortMap["mt0-oauth2"]="8080"

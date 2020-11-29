@@ -91,9 +91,6 @@ for i in "${!configNameMap[@]}"; do
   cp ./config/application-nosql.properties $APP_ROOT/$i/src/main/resources/application-nosql.properties
   sed -i "s/{db_name}/${configNameDBMap[$i]}/g" $APP_ROOT/$i/src/main/resources/application-sql.properties
 
-#  copy shared to all repos
-  rm -rf $APP_ROOT/$i/src/main/java/com/hw/shared
-  cp -r ./src/main/java/com/hw/shared $APP_ROOT/$i/src/main/java/com/hw
   cp ./config/Dockerfile $APP_ROOT/$i/Dockerfile
   sed -i "s/{jar_name}/${configNameMap[$i]}.jar/g" $APP_ROOT/$i/Dockerfile
   sed -i "s/{port_num}/${configPortMap[$i]}/g" $APP_ROOT/$i/Dockerfile

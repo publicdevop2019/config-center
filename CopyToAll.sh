@@ -9,7 +9,6 @@ configNameDBMap["mt5-file-upload"]="fileUploadDB"
 configNameDBMap["mt6-payment"]="paymentDB"
 configNameDBMap["mt13-bbs"]="bbsDB"
 configNameDBMap["mt15-saga-orchestrator"]="txDB"
-configNameDBMap["mt17-object-store"]="objectDB"
 
 declare -A configAppNameMap
 configAppNameMap["mt0-oauth2"]="oauth"

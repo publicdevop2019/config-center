@@ -5,7 +5,7 @@ import com.hw.shared.IdGenerator;
 import com.hw.shared.idempotent.model.ChangeRecord;
 import com.hw.shared.idempotent.model.ChangeRecordQueryRegistry;
 import com.hw.shared.idempotent.representation.RootChangeRecordCardRep;
-import com.hw.shared.rest.DefaultRoleBasedRestfulService;
+import com.hw.shared.rest.RoleBasedRestfulService;
 import com.hw.shared.rest.VoidTypedClass;
 import com.hw.shared.rest.exception.AggregateNotExistException;
 import com.hw.shared.sql.RestfulQueryRegistry;
@@ -19,78 +19,30 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class RootChangeRecordApplicationService extends DefaultRoleBasedRestfulService<ChangeRecord, RootChangeRecordCardRep, Void, VoidTypedClass> {
-    @Autowired
-    private ApplicationContext context;
-    @Autowired
-    private IdGenerator idGenerator2;
-    @Autowired
-    private ChangeRepository changeRepository;
-    @Autowired
-    private ChangeRecordQueryRegistry changeRecordQueryRegistry;
-    @Autowired
-    private ObjectMapper om2;
-
-    @PostConstruct
-    private void setUp() {
-        repo = changeRepository;
-        idGenerator = idGenerator2;
-        queryRegistry = changeRecordQueryRegistry;
+public class RootChangeRecordApplicationService extends RoleBasedRestfulService<ChangeRecord, RootChangeRecordCardRep, Void, VoidTypedClass> {
+    {
         entityClass = ChangeRecord.class;
         role = RestfulQueryRegistry.RoleEnum.ROOT;
-        om = om2;
     }
+    @Autowired
+    ApplicationContext context;
 
     @Transactional
     public void deleteById(Long id) {
-        ChangeRecord changeRecord = changeRepository.findById(id).orElseThrow(AggregateNotExistException::new);
+        ChangeRecord changeRecord = repo.findById(id).orElseThrow(AggregateNotExistException::new);
         Class<?> aClass = null;
         try {
             aClass = Class.forName(changeRecord.getServiceBeanName());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        DefaultRoleBasedRestfulService bean = (DefaultRoleBasedRestfulService) context.getBean(aClass);
+        RoleBasedRestfulService bean = (RoleBasedRestfulService) context.getBean(aClass);
         bean.rollback(changeRecord.getChangeId());
     }
 
     @Override
-    public ChangeRecord replaceEntity(ChangeRecord changeRecord, Object command) {
-        return null;
-    }
-
-    @Override
     public RootChangeRecordCardRep getEntitySumRepresentation(ChangeRecord changeRecord) {
-        return new RootChangeRecordCardRep(changeRecord,om2);
-    }
-
-    @Override
-    public Void getEntityRepresentation(ChangeRecord changeRecord) {
-        return null;
-    }
-
-    @Override
-    protected ChangeRecord createEntity(long id, Object command) {
-        return null;
-    }
-
-    @Override
-    public void preDelete(ChangeRecord changeRecord) {
-    }
-
-    @Override
-    public void postDelete(ChangeRecord changeRecord) {
-
-    }
-
-    @Override
-    protected void prePatch(ChangeRecord changeRecord, Map<String, Object> params, VoidTypedClass middleLayer) {
-
-    }
-
-    @Override
-    protected void postPatch(ChangeRecord changeRecord, Map<String, Object> params, VoidTypedClass middleLayer) {
-
+        return new RootChangeRecordCardRep(changeRecord);
     }
 
     @Transactional
@@ -103,7 +55,7 @@ public class RootChangeRecordApplicationService extends DefaultRoleBasedRestfulS
             } catch (ClassNotFoundException ex) {
                 ex.printStackTrace();
             }
-            DefaultRoleBasedRestfulService bean = (DefaultRoleBasedRestfulService) context.getBean(aClass);
+            RoleBasedRestfulService bean = (RoleBasedRestfulService) context.getBean(aClass);
             bean.rollback(e.getChangeId());
         });
 

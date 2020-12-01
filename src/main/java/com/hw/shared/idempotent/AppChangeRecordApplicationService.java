@@ -1,13 +1,11 @@
 package com.hw.shared.idempotent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hw.shared.IdGenerator;
 import com.hw.shared.idempotent.command.AppCreateChangeRecordCommand;
 import com.hw.shared.idempotent.model.ChangeRecord;
-import com.hw.shared.idempotent.model.ChangeRecordQueryRegistry;
 import com.hw.shared.idempotent.representation.AppChangeRecordCardRep;
 import com.hw.shared.rest.CreatedAggregateRep;
-import com.hw.shared.rest.DefaultRoleBasedRestfulService;
+import com.hw.shared.rest.RoleBasedRestfulService;
 import com.hw.shared.rest.VoidTypedClass;
 import com.hw.shared.sql.RestfulQueryRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,17 +18,15 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class AppChangeRecordApplicationService extends DefaultRoleBasedRestfulService<ChangeRecord, AppChangeRecordCardRep, Void, VoidTypedClass> {
+public class AppChangeRecordApplicationService extends RoleBasedRestfulService<ChangeRecord, AppChangeRecordCardRep, Void, VoidTypedClass> {
+    {
+        entityClass = ChangeRecord.class;
+        role = RestfulQueryRegistry.RoleEnum.APP;
+    }
     @Autowired
-    private IdGenerator idGenerator2;
+    ApplicationContext context;
     @Autowired
-    private ChangeRepository changeHistoryRepository;
-    @Autowired
-    private ObjectMapper om2;
-    @Autowired
-    private ChangeRecordQueryRegistry changeRecordQueryRegistry;
-    @Autowired
-    private ApplicationContext context;
+    ObjectMapper om;
 
     @Override
     public ChangeRecord replaceEntity(ChangeRecord changeRecord, Object command) {
@@ -39,53 +35,13 @@ public class AppChangeRecordApplicationService extends DefaultRoleBasedRestfulSe
 
     @Override
     public AppChangeRecordCardRep getEntitySumRepresentation(ChangeRecord changeRecord) {
-        return new AppChangeRecordCardRep(changeRecord,om2);
-    }
-
-    @Override
-    public Void getEntityRepresentation(ChangeRecord changeRecord) {
-        return null;
-    }
-
-    @Override
-    protected ChangeRecord createEntity(long id, Object command) {
-        return null;
-    }
-
-    @Override
-    public void preDelete(ChangeRecord changeRecord) {
-
-    }
-
-    @Override
-    public void postDelete(ChangeRecord changeRecord) {
-
-    }
-
-    @Override
-    protected void prePatch(ChangeRecord changeRecord, Map<String, Object> params, VoidTypedClass middleLayer) {
-
-    }
-
-    @Override
-    protected void postPatch(ChangeRecord changeRecord, Map<String, Object> params, VoidTypedClass middleLayer) {
-
-    }
-
-    @PostConstruct
-    private void setUp() {
-        repo = changeHistoryRepository;
-        idGenerator = idGenerator2;
-        entityClass = ChangeRecord.class;
-        role = RestfulQueryRegistry.RoleEnum.APP;
-        queryRegistry = changeRecordQueryRegistry;
-        om = om2;
+        return new AppChangeRecordCardRep(changeRecord);
     }
 
     @Transactional
     public CreatedAggregateRep create(AppCreateChangeRecordCommand command) {
         long id = idGenerator.getId();
-        ChangeRecord changeRecord = ChangeRecord.create(id, command,om2);
+        ChangeRecord changeRecord = ChangeRecord.create(id, command, om);
         ChangeRecord saved = repo.save(changeRecord);
         return new CreatedAggregateRep(saved);
     }
@@ -100,7 +56,7 @@ public class AppChangeRecordApplicationService extends DefaultRoleBasedRestfulSe
             } catch (ClassNotFoundException ex) {
                 ex.printStackTrace();
             }
-            DefaultRoleBasedRestfulService bean = (DefaultRoleBasedRestfulService) context.getBean(aClass);
+            RoleBasedRestfulService bean = (RoleBasedRestfulService) context.getBean(aClass);
             bean.rollback(e.getChangeId());
         });
 

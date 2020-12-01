@@ -6,6 +6,7 @@ import com.hw.shared.idempotent.OperationType;
 import com.hw.shared.idempotent.model.ChangeRecord;
 import com.hw.shared.idempotent.model.CustomByteArraySerializer;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 
@@ -20,8 +21,9 @@ public class RootChangeRecordCardRep {
     private String query;
     private String serviceBeanName;
     private Object requestBody;
-
-    public RootChangeRecordCardRep(ChangeRecord changeRecord, ObjectMapper om) {
+    @Autowired
+    private ObjectMapper om;
+    public RootChangeRecordCardRep(ChangeRecord changeRecord) {
         this.id = changeRecord.getId();
         this.changeId = changeRecord.getChangeId();
         this.entityType = changeRecord.getEntityType();

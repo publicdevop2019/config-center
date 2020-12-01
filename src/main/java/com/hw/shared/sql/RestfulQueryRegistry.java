@@ -40,6 +40,10 @@ public abstract class RestfulQueryRegistry<T extends Auditable> {
 
     public abstract Class<T> getEntityClass();
 
+    public boolean hasDeleteQuery(RoleEnum roleEnum) {
+        return deleteQueryBuilder.get(roleEnum) != null;
+    }
+
     public enum RoleEnum {
         ROOT,
         ADMIN,

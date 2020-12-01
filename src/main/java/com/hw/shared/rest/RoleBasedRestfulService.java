@@ -25,14 +25,13 @@ import com.hw.shared.sql.SumPagedRep;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
@@ -44,9 +43,9 @@ import static com.hw.shared.idempotent.model.ChangeRecord.CHANGE_ID;
 import static com.hw.shared.idempotent.model.ChangeRecord.ENTITY_TYPE;
 
 @Slf4j
-public abstract class DefaultRoleBasedRestfulService<T extends Auditable & Aggregate, X, Y, Z extends TypedClass<Z>> implements AfterWriteCompleteHook<T> {
+public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X, Y, Z extends TypedClass<Z>> implements AfterWriteCompleteHook<T> {
     @Autowired
-    protected JpaRepository<T, Long> repo;
+    protected CrudRepository<T, Long> repo;
     @Autowired
     protected IdGenerator idGenerator;
     @Autowired
@@ -66,9 +65,8 @@ public abstract class DefaultRoleBasedRestfulService<T extends Auditable & Aggre
     protected boolean rollbackSupported = true;
     @Autowired
     protected AppChangeRecordApplicationService appChangeRecordApplicationService;
-    protected boolean deleteHook = false;
 
-    protected Long getAggregateId(Object object) {
+    protected Long generateId(Object object) {
         return idGenerator.getId();
     }
 
@@ -86,7 +84,7 @@ public abstract class DefaultRoleBasedRestfulService<T extends Auditable & Aggre
             saveChangeRecord(command, changeId, OperationType.POST, "id:", null, null);
             return new CreatedAggregateRep();
         } else {
-            long id = getAggregateId(command);
+            long id = generateId(command);
             T execute = transactionTemplate.execute(transactionStatus -> {
                 saveChangeRecord(command, changeId, OperationType.POST, "id:" + id, null, null);
                 T created = createEntity(id, command);
@@ -181,6 +179,9 @@ public abstract class DefaultRoleBasedRestfulService<T extends Auditable & Aggre
     }
 
     public Integer deleteByQuery(String query, String changeId) {
+        if (!queryRegistry.hasDeleteQuery(role)) {
+            throw new UnsupportedOperationException();
+        }
         if (changeAlreadyExist(changeId) && changeAlreadyRevoked(changeId)) {
             return 0;
         } else if (changeAlreadyExist(changeId) && !changeAlreadyRevoked(changeId)) {
@@ -189,21 +190,17 @@ public abstract class DefaultRoleBasedRestfulService<T extends Auditable & Aggre
             saveChangeRecord(null, changeId, OperationType.DELETE_BY_QUERY, query, Collections.EMPTY_SET, null);
             return 0;
         } else {
-            List<T> data = getTs(query);
+            List<T> data = getAggregates(query);
             if (data.isEmpty())
                 return 0;
-            if (deleteHook) {
-                data.forEach(this::preDelete);
-            }
+            data.forEach(this::preDelete);
             Set<Long> collect = data.stream().map(Aggregate::getId).collect(Collectors.toSet());
             String join = "id:" + String.join(".", collect.stream().map(Object::toString).collect(Collectors.toSet()));
             Integer execute = transactionTemplate.execute(transactionStatus -> {
                 saveChangeRecord(null, changeId, OperationType.DELETE_BY_QUERY, query, collect, null);
                 return queryRegistry.deleteByQuery(role, join, entityClass);//delete only checked entity
             });
-            if (deleteHook) {
-                data.forEach(this::postDelete);
-            }
+            data.forEach(this::postDelete);
             cleanUpCache(collect);
             afterWriteComplete();
             afterDeleteComplete(collect);
@@ -213,7 +210,7 @@ public abstract class DefaultRoleBasedRestfulService<T extends Auditable & Aggre
     }
 
 
-    private List<T> getTs(String query) {
+    private List<T> getAggregates(String query) {
         int pageNum = 0;
         SumPagedRep<T> tSumPagedRep = queryRegistry.readByQuery(role, query, "num:" + pageNum, null, entityClass);
         if (tSumPagedRep.getData().size() == 0)
@@ -476,19 +473,31 @@ public abstract class DefaultRoleBasedRestfulService<T extends Auditable & Aggre
         }
     }
 
-    public abstract T replaceEntity(T t, Object command);
+    protected T replaceEntity(T t, Object command) {
+        throw new UnsupportedOperationException();
+    }
 
-    public abstract X getEntitySumRepresentation(T t);
+    protected X getEntitySumRepresentation(T t) {
+        return null;
+    }
 
-    public abstract Y getEntityRepresentation(T t);
+    protected Y getEntityRepresentation(T t) {
+        return null;
+    }
 
-    protected abstract T createEntity(long id, Object command);
+    protected T createEntity(long id, Object command) {
+        throw new UnsupportedOperationException();
+    }
 
-    public abstract void preDelete(T t);
+    protected void preDelete(T t) {
+    }
 
-    public abstract void postDelete(T t);
+    protected void postDelete(T t) {
+    }
 
-    protected abstract void prePatch(T t, Map<String, Object> params, Z middleLayer);
+    protected void prePatch(T t, Map<String, Object> params, Z middleLayer) {
+    }
 
-    protected abstract void postPatch(T t, Map<String, Object> params, Z middleLayer);
+    protected void postPatch(T t, Map<String, Object> params, Z middleLayer) {
+    }
 }

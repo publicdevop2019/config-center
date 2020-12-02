@@ -104,12 +104,13 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
             saveChangeRecord(command, changeId, OperationType.PUT, "id:" + id.toString(), null, null);
         } else {
             SumPagedRep<T> tSumPagedRep = getEntityById(id);
-            checkVersion(tSumPagedRep.getData().get(0), command);
+            T t = tSumPagedRep.getData().get(0);
+            checkVersion(t, command);
             transactionTemplate.execute(new TransactionCallbackWithoutResult() {
                 @Override
                 protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                    saveChangeRecord(command, changeId, OperationType.PUT, "id:" + id.toString(), null, tSumPagedRep.getData().get(0));
-                    T after = replaceEntity(tSumPagedRep.getData().get(0), command);
+                    saveChangeRecord(command, changeId, OperationType.PUT, "id:" + id.toString(), null, t);
+                    T after = replaceEntity(t, command);
                     repo.save(after);
                 }
             });
@@ -138,11 +139,12 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
                 throw new AggregatePatchException();
             }
             prePatch(original, params, command);
-            BeanUtils.copyProperties(command, original);
+            Z finalCommand = command;
             transactionTemplate.execute(new TransactionCallbackWithoutResult() {
                 @Override
                 protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                    saveChangeRecord(patch, (String) params.get(HTTP_HEADER_CHANGE_ID), OperationType.PATCH_BY_ID, "id:" + id.toString(), null, null);
+                    saveChangeRecord(patch, (String) params.get(HTTP_HEADER_CHANGE_ID), OperationType.PATCH_BY_ID, "id:" + id.toString(), null, original);
+                    BeanUtils.copyProperties(finalCommand, original);//make change after changeRecord is created
                     repo.save(original);
                 }
             });
@@ -268,10 +270,9 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
             if (data == null || data.size() == 0) {
                 throw new ChangeNotFoundException();
             }
-            if ((data.get(0).getOperationType().equals(OperationType.DELETE_BY_QUERY)
-                    || data.get(0).getOperationType().equals(OperationType.POST)
-            )) {
-                if (data.get(0).getOperationType().equals(OperationType.POST)) {
+            OperationType type = data.get(0).getOperationType();
+            if (List.of(OperationType.DELETE_BY_QUERY, OperationType.POST).contains(type)) {
+                if (OperationType.POST.equals(type)) {
                     Set<Long> execute = transactionTemplate.execute(e -> {
                         saveChangeRecord(null, changeId + CHANGE_REVOKED, OperationType.CANCEL_CREATE, data.get(0).getQuery(), null, null);
                         return restoreCreate(data.get(0).getQuery().replace("id:", ""));
@@ -289,10 +290,10 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
                     afterCreateComplete(null);
                     cleanUpCache(execute);
                 }
-            } else if (data.get(0).getOperationType().equals(OperationType.PATCH_BATCH)) {
+            } else if (OperationType.PATCH_BATCH.equals(type)) {
                 List<PatchCommand> rollbackCmd = buildRollbackCommand((List<PatchCommand>) data.get(0).getRequestBody());
                 patchBatch(rollbackCmd, changeId + CHANGE_REVOKED);
-            } else if (data.get(0).getOperationType().equals(OperationType.PUT)) {
+            } else if (List.of(OperationType.PATCH_BY_ID, OperationType.PUT).contains(type)) {
                 T previous = (T) data.get(0).getReplacedVersion();
                 T stored = getEntityById(previous.getId()).getData().get(0);
                 Integer version = stored.getVersion();

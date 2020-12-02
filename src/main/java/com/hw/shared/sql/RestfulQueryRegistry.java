@@ -51,7 +51,13 @@ public abstract class RestfulQueryRegistry<T extends Auditable> {
         APP,
         PUBLIC
     }
-
+    {
+        cacheable.put(RoleEnum.USER, true);
+        cacheable.put(RoleEnum.ADMIN, true);
+        cacheable.put(RoleEnum.APP, true);
+        cacheable.put(RoleEnum.PUBLIC, true);
+        cacheable.put(RoleEnum.ROOT, true);
+    }
     @PostConstruct
     protected void configQueryBuilder() {
 

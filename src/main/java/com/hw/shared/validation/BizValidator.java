@@ -1,5 +1,6 @@
 package com.hw.shared.validation;
 
+import com.hw.shared.EurekaRegistryHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -16,9 +17,11 @@ import java.util.Objects;
 public class BizValidator {
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private EurekaRegistryHelper eurekaRegistryHelper;
 
     public void validate(String name, Object command) {
-        String resolvedUrl = "http://localhost:4040/" + name;
+        String resolvedUrl = eurekaRegistryHelper.getValidatorUrl() + "/" + name;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<Object> hashMapHttpEntity = new HttpEntity<>(command, headers);

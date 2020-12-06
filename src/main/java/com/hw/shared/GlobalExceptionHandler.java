@@ -45,7 +45,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ChangeNotFoundException.class,
             UserIdNotFoundException.class,
             ValidationFailedException.class,
-            AggregateOutdatedException.class
+            AggregateOutdatedException.class,
+            IllegalJwtException.class
     })
     protected ResponseEntity<Object> handle400Exception(RuntimeException ex, WebRequest request) {
         ErrorMessage errorMessage = new ErrorMessage(ex);

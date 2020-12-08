@@ -17,14 +17,14 @@ import static com.hw.shared.AppConstant.COMMON_ENTITY_ID;
 import static com.hw.shared.Auditable.*;
 
 @Slf4j
-public abstract class SoftDeleteQueryBuilder<T> extends PredicateConfig<T> {
+public abstract class SoftDeleteQueryBuilder<T> extends PredicateConfig<T> implements DeleteQueryBuilder<T>{
     @Autowired
     protected EntityManager em;
 
     protected SoftDeleteQueryBuilder() {
         supportedWhereField.put(COMMON_ENTITY_ID, new SelectFieldIdWhereClause<>());
     }
-
+    @Override
     public Integer delete(String search, Class<T> clazz) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaUpdate<T> criteriaUpdate = cb.createCriteriaUpdate(clazz);
@@ -35,9 +35,7 @@ public abstract class SoftDeleteQueryBuilder<T> extends PredicateConfig<T> {
         Optional<String> currentAuditor = AuditorAwareImpl.getAuditor();
         criteriaUpdate.set(ENTITY_DELETED_BY, currentAuditor.orElse(""));
         criteriaUpdate.set(ENTITY_DELETED_AT, new Date());
-        int i = em.createQuery(criteriaUpdate).executeUpdate();
-        log.info("after sql executed");
-        return i;
+        return em.createQuery(criteriaUpdate).executeUpdate();
     }
 
 

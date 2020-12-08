@@ -38,7 +38,7 @@ public class Auditable implements Serializable {
     @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
     private Date modifiedAt;
-    private Boolean deleted;
+    private boolean deleted = false;
     private String deletedBy;
     @Temporal(TemporalType.TIMESTAMP)
     private Date deletedAt;

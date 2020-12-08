@@ -6,10 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hw.shared.Auditable;
 import com.hw.shared.cache.CacheCriteria;
 import com.hw.shared.idempotent.model.ChangeRecord;
-import com.hw.shared.sql.builder.PredicateConfig;
-import com.hw.shared.sql.builder.SelectQueryBuilder;
-import com.hw.shared.sql.builder.SoftDeleteQueryBuilder;
-import com.hw.shared.sql.builder.UpdateQueryBuilder;
+import com.hw.shared.sql.builder.*;
 import com.hw.shared.sql.exception.QueryBuilderNotFoundException;
 import com.hw.shared.sql.exception.UnknownRoleException;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +33,7 @@ public abstract class RestfulQueryRegistry<T extends Auditable> {
     public Map<RoleEnum, Boolean> cacheable = new HashMap<>();
     protected Map<RoleEnum, SelectQueryBuilder<T>> selectQueryBuilder = new HashMap<>();
     protected Map<RoleEnum, UpdateQueryBuilder<T>> updateQueryBuilder = new HashMap<>();
-    protected Map<RoleEnum, SoftDeleteQueryBuilder<T>> deleteQueryBuilder = new HashMap<>();
+    protected Map<RoleEnum, DeleteQueryBuilder<T>> deleteQueryBuilder = new HashMap<>();
 
     public abstract Class<T> getEntityClass();
 
@@ -67,10 +64,10 @@ public abstract class RestfulQueryRegistry<T extends Auditable> {
             SelectQueryBuilder<T> builder = (SelectQueryBuilder<T>) applicationContext.getBean(name);
             selectQueryBuilder.put(roleEnum, builder);
         }
-        String[] beanNamesForType2 = applicationContext.getBeanNamesForType(ResolvableType.forClassWithGenerics(SoftDeleteQueryBuilder.class, getEntityClass()));
+        String[] beanNamesForType2 = applicationContext.getBeanNamesForType(ResolvableType.forClassWithGenerics(DeleteQueryBuilder.class, getEntityClass()));
         for (String name : beanNamesForType2) {
             RoleEnum roleEnum = getRoleEnum(name);
-            SoftDeleteQueryBuilder<T> builder = (SoftDeleteQueryBuilder<T>) applicationContext.getBean(name);
+            DeleteQueryBuilder<T> builder = (DeleteQueryBuilder<T>) applicationContext.getBean(name);
             deleteQueryBuilder.put(roleEnum, builder);
         }
         String[] beanNamesForType3 = applicationContext.getBeanNamesForType(ResolvableType.forClassWithGenerics(UpdateQueryBuilder.class, getEntityClass()));
@@ -136,7 +133,7 @@ public abstract class RestfulQueryRegistry<T extends Auditable> {
     }
 
     public Integer deleteByQuery(RoleEnum roleEnum, String query, Class<T> clazz) {
-        SoftDeleteQueryBuilder<T> deleteQueryBuilder = this.deleteQueryBuilder.get(roleEnum);
+        DeleteQueryBuilder<T> deleteQueryBuilder = this.deleteQueryBuilder.get(roleEnum);
         if (deleteQueryBuilder == null)
             throw new QueryBuilderNotFoundException();
         return deleteQueryBuilder.delete(query, clazz);

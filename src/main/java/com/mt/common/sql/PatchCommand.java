@@ -17,16 +17,19 @@ public class PatchCommand implements Comparable<PatchCommand>, Serializable {
 
     @Override
     public int compareTo(PatchCommand to) {
-        if (parseId(path).equals(parseId(to.path)))
+        if (parseDomainId(path).equals(parseDomainId(to.path)))
             return 0;
-        else if (parseId(path) > parseId(to.path))
-            return 1;
         else
-            return -1;
+            return 1;
     }
 
     private Long parseId(String path) {
         String[] split = path.split("/");
         return Long.parseLong(split[1]);
+    }
+
+    private String parseDomainId(String path) {
+        String[] split = path.split("/");
+        return split[1];
     }
 }

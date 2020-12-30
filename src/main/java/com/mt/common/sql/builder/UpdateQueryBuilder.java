@@ -118,7 +118,11 @@ public abstract class UpdateQueryBuilder<T extends Auditable> {
         // key in hashmap is final, hence create new hashmap
         jsonPatchCommandListHashMap.forEach((key, value) -> {
             //update expect
-            key.setExpect(key.getExpect() * value.size());
+            if (key.getExpect() == null) {
+                key.setExpect(value.size());
+            } else {
+                key.setExpect(key.getExpect() * value.size());
+            }
             jsonPatchCommandListHashMapMerged.put(key, value);
         });
         return jsonPatchCommandListHashMapMerged;

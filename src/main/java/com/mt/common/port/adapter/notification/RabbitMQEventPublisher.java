@@ -14,11 +14,12 @@
 
 package com.mt.common.port.adapter.notification;
 
+import com.mt.common.domain.model.CommonDomainRegistry;
 import com.mt.common.domain_event.DomainEvent;
 import com.mt.common.domain_event.EventPublisher;
+import com.mt.common.domain_event.EventRepository;
 import com.mt.common.notification.PublishedEventTracker;
 import com.mt.common.notification.PublishedEventTrackerRepository;
-import com.mt.common.domain_event.EventRepository;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -26,9 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
@@ -58,18 +57,10 @@ public class RabbitMQEventPublisher implements EventPublisher {
                  Channel channel = connection.createChannel()) {
                 channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
                 for (DomainEvent domainEvent : storedEvents) {
-                    byte[] notification2;
-                    try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-                        ObjectOutputStream out;
-                        out = new ObjectOutputStream(bos);
-                        out.writeObject(domainEvent);
-                        out.flush();
-                        notification2 = bos.toByteArray();
-                    }
                     log.debug("publishing event with id {}", domainEvent.getId());
                     channel.basicPublish(EXCHANGE_NAME, "",
                             null,
-                            notification2);
+                            CommonDomainRegistry.customObjectSerializer().nativeSerialize(domainEvent));
                 }
 
             } catch (IOException | TimeoutException e) {

@@ -63,7 +63,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(value = {
             RuntimeException.class,
             JwtTokenRetrievalException.class,
-            JacksonObjectSerializer.UnableToDeepCopyException.class,
             JacksonObjectSerializer.UnableToDeepCopyListException.class,
             JacksonObjectSerializer.UnableToDeSerializeException.class,
             JacksonObjectSerializer.UnableToSerializeException.class,

@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static com.mt.common.AppConstant.*;
+import static com.mt.common.CommonConstant.*;
 
 @Slf4j
 @RestController

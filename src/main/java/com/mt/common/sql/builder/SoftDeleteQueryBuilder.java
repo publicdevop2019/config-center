@@ -1,6 +1,6 @@
 package com.mt.common.sql.builder;
 
-import com.mt.common.AuditorAwareImpl;
+import com.mt.common.audit.AuditorAwareImpl;
 import com.mt.common.sql.clause.SelectFieldIdWhereClause;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +13,8 @@ import javax.persistence.criteria.Root;
 import java.util.Date;
 import java.util.Optional;
 
-import static com.mt.common.AppConstant.COMMON_ENTITY_ID;
-import static com.mt.common.Auditable.*;
+import static com.mt.common.CommonConstant.COMMON_ENTITY_ID;
+import static com.mt.common.audit.Auditable.*;
 
 @Slf4j
 public abstract class SoftDeleteQueryBuilder<T> extends PredicateConfig<T> implements DeleteQueryBuilder<T>{

@@ -5,7 +5,7 @@
 
     <groupId>com.github.publicdevop2019</groupId>
     <artifactId>mt-common</artifactId>
-    <version>0.2.4</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
     <name>mt-common</name>
     <url>https://github.com/publicdevop2019/config-center</url>
@@ -42,7 +42,7 @@
             <roles>
                 <role>Developer</role>
             </roles>
-            <timezone>-4</timezone>
+            <timezone>-5</timezone>
         </developer>
     </developers>
     <dependencies>

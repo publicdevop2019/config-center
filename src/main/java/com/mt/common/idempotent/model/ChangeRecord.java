@@ -2,7 +2,7 @@ package com.mt.common.idempotent.model;
 
 import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mt.common.Auditable;
+import com.mt.common.audit.Auditable;
 import com.mt.common.idempotent.OperationType;
 import com.mt.common.idempotent.command.AppCreateChangeRecordCommand;
 import com.mt.common.rest.Aggregate;

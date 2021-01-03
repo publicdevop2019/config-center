@@ -1,7 +1,7 @@
 package com.mt.common.sql.builder;
 
-import com.mt.common.Auditable;
-import com.mt.common.AuditorAwareImpl;
+import com.mt.common.audit.Auditable;
+import com.mt.common.audit.AuditorAwareImpl;
 import com.mt.common.sql.PatchCommand;
 import com.mt.common.sql.clause.SelectNotDeletedClause;
 import com.mt.common.sql.exception.PatchCommandExpectNotMatchException;
@@ -16,10 +16,10 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static com.mt.common.AppConstant.PATCH_OP_TYPE_DIFF;
-import static com.mt.common.AppConstant.PATCH_OP_TYPE_SUM;
-import static com.mt.common.Auditable.ENTITY_MODIFIED_AT;
-import static com.mt.common.Auditable.ENTITY_MODIFIED_BY;
+import static com.mt.common.CommonConstant.PATCH_OP_TYPE_DIFF;
+import static com.mt.common.CommonConstant.PATCH_OP_TYPE_SUM;
+import static com.mt.common.audit.Auditable.ENTITY_MODIFIED_AT;
+import static com.mt.common.audit.Auditable.ENTITY_MODIFIED_BY;
 
 public abstract class UpdateQueryBuilder<T extends Auditable> {
     @Autowired

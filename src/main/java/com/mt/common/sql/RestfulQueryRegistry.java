@@ -3,7 +3,7 @@ package com.mt.common.sql;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mt.common.Auditable;
+import com.mt.common.audit.Auditable;
 import com.mt.common.cache.CacheCriteria;
 import com.mt.common.idempotent.model.ChangeRecord;
 import com.mt.common.sql.builder.DeleteQueryBuilder;
@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.mt.common.AppConstant.CACHE_ID_PREFIX;
-import static com.mt.common.AppConstant.CACHE_QUERY_PREFIX;
+import static com.mt.common.CommonConstant.CACHE_ID_PREFIX;
+import static com.mt.common.CommonConstant.CACHE_QUERY_PREFIX;
 
 @Slf4j
 public abstract class RestfulQueryRegistry<T extends Auditable> {

@@ -1,29 +1,24 @@
 package com.mt.common.rest;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonpatch.JsonPatch;
-import com.github.fge.jsonpatch.JsonPatchException;
-import com.mt.common.Auditable;
-import com.mt.common.AuditorAwareImpl;
-import com.mt.common.DeepCopyException;
-import com.mt.common.snowflake.IdGenerator;
+import com.mt.common.CommonConstant;
+import com.mt.common.audit.Auditable;
+import com.mt.common.audit.AuditorAwareImpl;
 import com.mt.common.idempotent.AppChangeRecordApplicationService;
 import com.mt.common.idempotent.OperationType;
 import com.mt.common.idempotent.command.AppCreateChangeRecordCommand;
 import com.mt.common.idempotent.exception.ChangeNotFoundException;
 import com.mt.common.idempotent.exception.RollbackNotSupportedException;
+import com.mt.common.idempotent.model.ChangeRecord;
 import com.mt.common.idempotent.representation.AppChangeRecordCardRep;
 import com.mt.common.rest.exception.AggregateNotExistException;
 import com.mt.common.rest.exception.AggregateOutdatedException;
-import com.mt.common.rest.exception.AggregatePatchException;
+import com.mt.common.serializer.CustomObjectSerializer;
+import com.mt.common.domain.model.uniqueId.IdGenerator;
 import com.mt.common.sql.PatchCommand;
 import com.mt.common.sql.RestfulQueryRegistry;
 import com.mt.common.sql.SumPagedRep;
-import com.mt.common.*;
-import com.mt.common.idempotent.model.ChangeRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +29,6 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.CollectionUtils;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
@@ -50,6 +44,8 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
     protected RestfulQueryRegistry<T> queryRegistry;
     @Autowired
     protected StringRedisTemplate redisTemplate;
+    @Autowired
+    protected CustomObjectSerializer customObjectSerializer;
 
     protected Class<T> entityClass;
 
@@ -119,34 +115,26 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
     }
 
     public void patchById(Long id, JsonPatch patch, Map<String, Object> params) {
-        String changeId = (String) params.get(AppConstant.HTTP_HEADER_CHANGE_ID);
+        String changeId = (String) params.get(CommonConstant.HTTP_HEADER_CHANGE_ID);
         if (changeAlreadyExist(changeId) && changeAlreadyRevoked(changeId)) {
         } else if (changeAlreadyExist(changeId) && !changeAlreadyRevoked(changeId)) {
         } else if (!changeAlreadyExist(changeId) && changeAlreadyRevoked(changeId)) {
-            saveChangeRecord(patch, (String) params.get(AppConstant.HTTP_HEADER_CHANGE_ID), OperationType.PATCH_BY_ID, "id:" + id.toString(), null, null);
+            saveChangeRecord(patch, (String) params.get(CommonConstant.HTTP_HEADER_CHANGE_ID), OperationType.PATCH_BY_ID, "id:" + id.toString(), null, null);
         } else {
             SumPagedRep<T> entityById = getEntityById(id);
             T original = entityById.getData().get(0);
-            Z command = entityPatchSupplier.apply(original);
-            try {
-                JsonNode jsonNode = om.convertValue(command, JsonNode.class);
-                JsonNode patchedNode = patch.apply(jsonNode);
-                command = om.treeToValue(patchedNode, command.getClazz());
-            } catch (JsonPatchException | JsonProcessingException e) {
-                e.printStackTrace();
-                throw new AggregatePatchException();
-            }
-            prePatch(original, params, command);
-            Z finalCommand = command;
+            Z before = entityPatchSupplier.apply(original);
+            Z after = customObjectSerializer.applyJsonPatch(patch, before, before.getClazz());
+            prePatch(original, params, before);
             transactionTemplate.execute(new TransactionCallbackWithoutResult() {
                 @Override
                 protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                    saveChangeRecord(patch, (String) params.get(AppConstant.HTTP_HEADER_CHANGE_ID), OperationType.PATCH_BY_ID, "id:" + id.toString(), null, original);
-                    BeanUtils.copyProperties(finalCommand, original);//make change after changeRecord is created
+                    saveChangeRecord(patch, (String) params.get(CommonConstant.HTTP_HEADER_CHANGE_ID), OperationType.PATCH_BY_ID, "id:" + id.toString(), null, original);
+                    BeanUtils.copyProperties(after, original);//make change after changeRecord is created
                     repo.save(original);
                 }
             });
-            postPatch(original, params, command);
+            postPatch(original, params, before);
             cleanUpCache(Collections.singleton(id));
             afterWriteComplete();
             afterPatchByIdComplete(id);
@@ -162,7 +150,7 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
             saveChangeRecord(commands, changeId, OperationType.PATCH_BATCH, null, null, null);
             return 0;
         } else {
-            List<PatchCommand> deepCopy = getDeepCopy(commands);
+            List<PatchCommand> deepCopy = customObjectSerializer.deepCopy(commands);
             Integer execute = transactionTemplate.execute(transactionStatus -> {
                 saveChangeRecord(commands, changeId, OperationType.PATCH_BATCH, null, null, null);
                 return queryRegistry.update(role, deepCopy, entityClass);
@@ -239,7 +227,7 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
 
     protected boolean changeAlreadyRevoked(String changeId) {
         String entityType = getEntityName();
-        SumPagedRep<AppChangeRecordCardRep> appChangeRecordCardRepSumPagedRep = appChangeRecordApplicationService.readByQuery(ChangeRecord.CHANGE_ID + ":" + changeId + AppConstant.CHANGE_REVOKED + "," + ChangeRecord.ENTITY_TYPE + ":" + entityType, null, "sc:1");
+        SumPagedRep<AppChangeRecordCardRep> appChangeRecordCardRepSumPagedRep = appChangeRecordApplicationService.readByQuery(ChangeRecord.CHANGE_ID + ":" + changeId + CommonConstant.CHANGE_REVOKED + "," + ChangeRecord.ENTITY_TYPE + ":" + entityType, null, "sc:1");
         return (appChangeRecordCardRepSumPagedRep.getData() != null && appChangeRecordCardRepSumPagedRep.getData().size() > 0);
     }
 
@@ -272,7 +260,7 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
             if (List.of(OperationType.DELETE_BY_QUERY, OperationType.POST).contains(type)) {
                 if (OperationType.POST.equals(type)) {
                     Set<Long> execute = transactionTemplate.execute(e -> {
-                        saveChangeRecord(null, changeId + AppConstant.CHANGE_REVOKED, OperationType.CANCEL_CREATE, data.get(0).getQuery(), null, null);
+                        saveChangeRecord(null, changeId + CommonConstant.CHANGE_REVOKED, OperationType.CANCEL_CREATE, data.get(0).getQuery(), null, null);
                         return restoreCreate(data.get(0).getQuery().replace("id:", ""));
                     });
                     afterWriteComplete();
@@ -281,7 +269,7 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
                 } else {
                     String collect = data.get(0).getDeletedIds().stream().map(Object::toString).collect(Collectors.joining("."));
                     Set<Long> execute = transactionTemplate.execute(e -> {
-                        saveChangeRecord(null, changeId + AppConstant.CHANGE_REVOKED, OperationType.RESTORE_DELETE, "id:" + collect, null, null);
+                        saveChangeRecord(null, changeId + CommonConstant.CHANGE_REVOKED, OperationType.RESTORE_DELETE, "id:" + collect, null, null);
                         return restoreDelete(collect);
                     });
                     afterWriteComplete();
@@ -290,7 +278,7 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
                 }
             } else if (OperationType.PATCH_BATCH.equals(type)) {
                 List<PatchCommand> rollbackCmd = buildRollbackCommand((List<PatchCommand>) data.get(0).getRequestBody());
-                patchBatch(rollbackCmd, changeId + AppConstant.CHANGE_REVOKED);
+                patchBatch(rollbackCmd, changeId + CommonConstant.CHANGE_REVOKED);
             } else if (List.of(OperationType.PATCH_BY_ID, OperationType.PUT).contains(type)) {
                 T previous = (T) data.get(0).getReplacedVersion();
                 T stored = getEntityById(previous.getId()).getData().get(0);
@@ -303,7 +291,7 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
                 }
                 BeanUtils.copyProperties(previous, stored);
                 Set<Long> execute = transactionTemplate.execute(e -> {
-                    saveChangeRecord(null, changeId + AppConstant.CHANGE_REVOKED, OperationType.RESTORE_LAST_VERSION, data.get(0).getQuery(), null, null);
+                    saveChangeRecord(null, changeId + CommonConstant.CHANGE_REVOKED, OperationType.RESTORE_LAST_VERSION, data.get(0).getQuery(), null, null);
                     repo.save(stored);
                     return Collections.singleton(stored.getId());
                 });
@@ -316,17 +304,17 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
             log.info("end of rollback change /w id {}", changeId);
         } else if (!changeAlreadyExist(changeId) && changeAlreadyRevoked(changeId)) {
         } else {
-            saveChangeRecord(null, changeId + AppConstant.CHANGE_REVOKED, OperationType.EMPTY_OPT, null, null, null);
+            saveChangeRecord(null, changeId + CommonConstant.CHANGE_REVOKED, OperationType.EMPTY_OPT, null, null, null);
         }
     }
 
     protected List<PatchCommand> buildRollbackCommand(List<PatchCommand> patchCommands) {
-        List<PatchCommand> deepCopy = getDeepCopy(patchCommands);
+        List<PatchCommand> deepCopy = customObjectSerializer.deepCopy(patchCommands);
         deepCopy.forEach(e -> {
-            if (e.getOp().equalsIgnoreCase(AppConstant.PATCH_OP_TYPE_SUM)) {
-                e.setOp(AppConstant.PATCH_OP_TYPE_DIFF);
-            } else if (e.getOp().equalsIgnoreCase(AppConstant.PATCH_OP_TYPE_DIFF)) {
-                e.setOp(AppConstant.PATCH_OP_TYPE_SUM);
+            if (e.getOp().equalsIgnoreCase(CommonConstant.PATCH_OP_TYPE_SUM)) {
+                e.setOp(CommonConstant.PATCH_OP_TYPE_DIFF);
+            } else if (e.getOp().equalsIgnoreCase(CommonConstant.PATCH_OP_TYPE_DIFF)) {
+                e.setOp(CommonConstant.PATCH_OP_TYPE_SUM);
             } else {
                 throw new RollbackNotSupportedException();
             }
@@ -373,18 +361,6 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
         return tSumPagedRep;
     }
 
-    protected List<PatchCommand> getDeepCopy(List<PatchCommand> patchCommands) {
-        List<PatchCommand> deepCopy;
-        try {
-            deepCopy = om.readValue(om.writeValueAsString(patchCommands), new TypeReference<List<PatchCommand>>() {
-            });
-        } catch (IOException e) {
-            log.error("error during deep copy", e);
-            throw new DeepCopyException();
-        }
-        return deepCopy;
-    }
-
     protected void saveChangeRecord(Object requestBody, String changeId, OperationType operationType, String query, Set<Long> deletedIds, Object toBeReplaced) {
         AppCreateChangeRecordCommand changeRecord = new AppCreateChangeRecordCommand();
         changeRecord.setChangeId(changeId);
@@ -420,12 +396,12 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
     public void cleanUpCache(Set<Long> ids) {
         if (hasCachedAggregates()) {
             String entityName = getEntityName();
-            Set<String> keys = redisTemplate.keys(entityName + AppConstant.CACHE_QUERY_PREFIX + ":*");
+            Set<String> keys = redisTemplate.keys(entityName + CommonConstant.CACHE_QUERY_PREFIX + ":*");
             if (!CollectionUtils.isEmpty(keys)) {
                 redisTemplate.delete(keys);
             }
             ids.forEach(id -> {
-                Set<String> keys1 = redisTemplate.keys(entityName + AppConstant.CACHE_ID_PREFIX + ":*");
+                Set<String> keys1 = redisTemplate.keys(entityName + CommonConstant.CACHE_ID_PREFIX + ":*");
                 if (!CollectionUtils.isEmpty(keys1)) {
                     Set<String> collect = keys1.stream().filter(e -> {
                         String[] split1 = e.split(":");
@@ -453,11 +429,11 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
     public void cleanUpAllCache() {
         if (hasCachedAggregates()) {
             String entityName = getEntityName();
-            Set<String> keys = redisTemplate.keys(entityName + AppConstant.CACHE_QUERY_PREFIX + ":*");
+            Set<String> keys = redisTemplate.keys(entityName + CommonConstant.CACHE_QUERY_PREFIX + ":*");
             if (!CollectionUtils.isEmpty(keys)) {
                 redisTemplate.delete(keys);
             }
-            Set<String> keys1 = redisTemplate.keys(entityName + AppConstant.CACHE_ID_PREFIX + ":*");
+            Set<String> keys1 = redisTemplate.keys(entityName + CommonConstant.CACHE_ID_PREFIX + ":*");
             if (!CollectionUtils.isEmpty(keys1)) {
                 redisTemplate.delete(keys1);
             }

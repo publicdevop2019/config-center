@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
 
-import static com.mt.common.AppConstant.EXCHANGE_ROLLBACK;
+import static com.mt.common.CommonConstant.EXCHANGE_ROLLBACK;
 
 @Slf4j
 @Component

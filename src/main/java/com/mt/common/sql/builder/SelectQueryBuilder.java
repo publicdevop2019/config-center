@@ -1,6 +1,6 @@
 package com.mt.common.sql.builder;
 
-import com.mt.common.Auditable;
+import com.mt.common.audit.Auditable;
 import com.mt.common.sql.clause.SelectFieldIdWhereClause;
 import com.mt.common.sql.clause.SelectNotDeletedClause;
 import com.mt.common.sql.exception.MaxPageSizeExceedException;
@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.mt.common.AppConstant.COMMON_ENTITY_ID;
+import static com.mt.common.CommonConstant.COMMON_ENTITY_ID;
 
 public abstract class SelectQueryBuilder<T extends Auditable> extends PredicateConfig<T> {
     protected Integer DEFAULT_PAGE_SIZE = 10;

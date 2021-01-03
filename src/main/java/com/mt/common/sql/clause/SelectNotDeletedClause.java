@@ -1,13 +1,13 @@
 package com.mt.common.sql.clause;
 
-import com.mt.common.Auditable;
+import com.mt.common.audit.Auditable;
 
 import javax.persistence.criteria.AbstractQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import static com.mt.common.Auditable.ENTITY_DELETED;
+import static com.mt.common.audit.Auditable.ENTITY_DELETED;
 
 public class SelectNotDeletedClause<T extends Auditable> {
     public SelectNotDeletedClause() {

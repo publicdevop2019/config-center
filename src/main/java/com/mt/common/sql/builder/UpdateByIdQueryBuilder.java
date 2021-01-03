@@ -1,7 +1,7 @@
 package com.mt.common.sql.builder;
 
 
-import com.mt.common.Auditable;
+import com.mt.common.audit.Auditable;
 import com.mt.common.rest.exception.NoUpdatableFieldException;
 import com.mt.common.rest.exception.UnsupportedPatchOperationException;
 import com.mt.common.sql.PatchCommand;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static com.mt.common.AppConstant.*;
+import static com.mt.common.CommonConstant.*;
 
 @Component
 public abstract class UpdateByIdQueryBuilder<T extends Auditable> extends UpdateQueryBuilder<T> {

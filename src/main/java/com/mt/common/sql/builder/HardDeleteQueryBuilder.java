@@ -9,7 +9,7 @@ import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import static com.mt.common.AppConstant.COMMON_ENTITY_ID;
+import static com.mt.common.CommonConstant.COMMON_ENTITY_ID;
 
 public abstract class HardDeleteQueryBuilder<T> extends PredicateConfig<T> implements DeleteQueryBuilder<T> {
     @Autowired

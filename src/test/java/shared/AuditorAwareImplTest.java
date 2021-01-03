@@ -1,6 +1,6 @@
 package shared;
 
-import com.mt.common.AuditorAwareImpl;
+import com.mt.common.audit.AuditorAwareImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,7 +1,7 @@
 package com.mt.common.infrastructure;
 
-import com.mt.common.domain.model.uniqueId.IdGenerator;
 import com.mt.common.domain.model.domainId.UniqueIdGeneratorService;
+import com.mt.common.domain.model.uniqueId.IdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

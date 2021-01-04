@@ -2,7 +2,6 @@ package com.mt.common.jwt;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mt.common.jwt.JwtTokenExtractException;
 
 import java.io.IOException;
 import java.time.OffsetDateTime;

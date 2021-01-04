@@ -36,10 +36,10 @@ public class ApplicationServiceIdempotentWrapper {
         }
     }
 
-    public <T> void idempotent(Object command, String changeId, Consumer<String> wrapper, Class<T> clazz) {
+    public <T> void idempotent(Object command, String changeId, Consumer<AppCreateChangeRecordCommand> wrapper, Class<T> clazz) {
         if (!changeAlreadyExist(changeId, clazz) && !changeAlreadyRevoked(changeId, clazz)) {
-            saveChangeRecord(command, changeId, OperationType.PUT, "id:", null, null, clazz);
-            wrapper.accept(null);
+            AppCreateChangeRecordCommand changeRecordCommand = saveChangeRecord(command, changeId, OperationType.PUT, "id:", null, null, clazz);
+            wrapper.accept(changeRecordCommand);
         }
     }
 
@@ -60,7 +60,7 @@ public class ApplicationServiceIdempotentWrapper {
         return split[split.length - 1];
     }
 
-    protected <T> void saveChangeRecord(Object requestBody, String changeId, OperationType operationType, String query, Set<Long> deletedIds, Object toBeReplaced, Class<T> clazz) {
+    protected <T> AppCreateChangeRecordCommand saveChangeRecord(Object requestBody, String changeId, OperationType operationType, String query, Set<Long> deletedIds, Object toBeReplaced, Class<T> clazz) {
         AppCreateChangeRecordCommand changeRecord = new AppCreateChangeRecordCommand();
         changeRecord.setChangeId(changeId);
         changeRecord.setEntityType(getEntityName(clazz));
@@ -71,5 +71,6 @@ public class ApplicationServiceIdempotentWrapper {
         changeRecord.setDeletedIds(deletedIds);
         changeRecord.setRequestBody(requestBody);
         appChangeRecordApplicationService.create(changeRecord);
+        return changeRecord;
     }
 }

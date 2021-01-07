@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.math.BigDecimal;
@@ -63,6 +64,7 @@ public abstract class SelectQueryBuilder<T extends Auditable> extends PredicateC
         TypedQuery<T> query1 = em.createQuery(query)
                 .setFirstResult(BigDecimal.valueOf(pageRequest.getOffset()).intValue())
                 .setMaxResults(pageRequest.getPageSize());
+        ((Query) query1).setHint("org.hibernate.cacheable", true);
         return query1.getResultList();
     }
 
@@ -81,7 +83,9 @@ public abstract class SelectQueryBuilder<T extends Auditable> extends PredicateC
         Predicate and = getPredicateEx(search, cb, root, query);
         if (and != null)
             query.where(and);
-        return em.createQuery(query).getSingleResult();
+        TypedQuery<Long> query1 = em.createQuery(query);
+        ((Query) query1).setHint("org.hibernate.cacheable", true);
+        return query1.getSingleResult();
     }
 
     private PageRequest getPageRequest(String page) {

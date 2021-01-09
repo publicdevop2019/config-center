@@ -17,7 +17,7 @@ import java.util.Set;
 @Getter
 @Setter(AccessLevel.PRIVATE)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(length=100)
+@DiscriminatorColumn(length = 100)
 public abstract class DomainEvent implements Serializable {
 
     @Id
@@ -28,6 +28,8 @@ public abstract class DomainEvent implements Serializable {
     @Embedded
     @AttributeOverride(name = "domainId", column = @Column(updatable = false))
     private DomainId domainId;
+    @Lob
+    protected byte[] body;
 
     @ElementCollection(fetch = FetchType.LAZY)
     @Embedded
@@ -43,6 +45,9 @@ public abstract class DomainEvent implements Serializable {
         setDomainId(domainId);
     }
 
+    public void updateBody(Object body){
+        setBody(CommonDomainRegistry.customObjectSerializer().nativeSerialize(body));
+    }
     public DomainEvent(Set<DomainId> domainIds) {
         setId(CommonDomainRegistry.uniqueIdGeneratorService().id());
         setTimestamp(new Date().getTime());

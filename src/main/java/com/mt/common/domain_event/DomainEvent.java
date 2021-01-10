@@ -13,6 +13,7 @@ import java.util.Set;
 
 @Getter
 @Setter(AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class DomainEvent implements Serializable {
 
     private Long id;

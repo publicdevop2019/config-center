@@ -14,7 +14,7 @@
 
 package com.mt.common.notification;
 
-import com.mt.common.domain_event.DomainEvent;
+import com.mt.common.domain_event.StoredEvent;
 
 import java.util.List;
 
@@ -24,5 +24,5 @@ public interface PublishedEventTrackerRepository {
 
     void trackMostRecentPublishedNotification(
             PublishedEventTracker aPublishedNotificationTracker,
-            List<DomainEvent> aNotifications);
+            List<StoredEvent> aNotifications);
 }

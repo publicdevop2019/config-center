@@ -9,13 +9,13 @@ public interface CustomObjectSerializer {
 
     byte[] nativeSerialize(Object object);
 
-    <T> T deepCopy(T object);
+    <T> T deepCopy(T object, Class<T> clazz);
 
     <T> T nativeDeepCopy(T object);
 
     <T> List<T> deepCopy(List<T> object);
 
-    <T> T deserialize(String str);
+    <T> T deserialize(String str, Class<T> clazz);
 
     Object nativeDeserialize(byte[] bytes);
 

@@ -14,7 +14,7 @@
 
 package com.mt.common.port.adapter.persistence;
 
-import com.mt.common.domain_event.DomainEvent;
+import com.mt.common.domain_event.StoredEvent;
 import com.mt.common.notification.PublishedEventTracker;
 import com.mt.common.notification.PublishedEventTrackerRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,7 +32,7 @@ public interface HibernatePublishedEventTrackerRepository extends PublishedEvent
         return objects.isEmpty() ? new PublishedEventTracker() : objects.get(0);
     }
 
-    default void trackMostRecentPublishedNotification(PublishedEventTracker tracker, List<DomainEvent> events) {
+    default void trackMostRecentPublishedNotification(PublishedEventTracker tracker, List<StoredEvent> events) {
         int lastIndex = events.size() - 1;
         if (lastIndex >= 0) {
             long mostRecentId = events.get(lastIndex).getId();

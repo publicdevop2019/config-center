@@ -18,6 +18,7 @@ import com.mt.common.domain.model.CommonDomainRegistry;
 import com.mt.common.domain_event.DomainEvent;
 import com.mt.common.domain_event.EventPublisher;
 import com.mt.common.domain_event.EventRepository;
+import com.mt.common.domain_event.StoredEvent;
 import com.mt.common.notification.PublishedEventTracker;
 import com.mt.common.notification.PublishedEventTrackerRepository;
 import com.rabbitmq.client.Channel;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
@@ -48,19 +50,18 @@ public class RabbitMQEventPublisher implements EventPublisher {
     public void publishNotifications() {
         PublishedEventTracker publishedNotificationTracker =
                 publishedEventTrackerRepository.publishedNotificationTracker();
-        List<DomainEvent> storedEvents =
-                eventStore.allStoredEventsSince(publishedNotificationTracker.getLastPublishedEventId());
+        List<StoredEvent> storedEvents = eventStore.allStoredEventsSince(publishedNotificationTracker.getLastPublishedEventId());
         if (!storedEvents.isEmpty()) {
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost("localhost");
             try (Connection connection = factory.newConnection();
                  Channel channel = connection.createChannel()) {
                 channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
-                for (DomainEvent domainEvent : storedEvents) {
+                for (StoredEvent domainEvent : storedEvents) {
                     log.debug("publishing event with id {}", domainEvent.getId());
                     channel.basicPublish(EXCHANGE_NAME, "",
                             null,
-                            CommonDomainRegistry.customObjectSerializer().nativeSerialize(domainEvent));
+                            CommonDomainRegistry.customObjectSerializer().serialize(domainEvent).getBytes(StandardCharsets.UTF_8));
                 }
 
             } catch (IOException | TimeoutException e) {

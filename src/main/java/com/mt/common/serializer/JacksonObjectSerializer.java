@@ -41,8 +41,8 @@ public class JacksonObjectSerializer implements CustomObjectSerializer {
     }
 
     @Override
-    public <T> T deepCopy(T object) {
-        return deserialize(serialize(object));
+    public <T> T deepCopy(T object, Class<T> clazz) {
+        return deserialize(serialize(object), clazz);
     }
 
     @Override
@@ -62,10 +62,9 @@ public class JacksonObjectSerializer implements CustomObjectSerializer {
     }
 
     @Override
-    public <T> T deserialize(String str) {
+    public <T> T deserialize(String str, Class<T> clazz) {
         try {
-            return objectMapper.readValue(str, new TypeReference<List<T>>() {
-            });
+            return objectMapper.readValue(str, clazz);
         } catch (IOException e) {
             log.error("error during object mapper deserialize", e);
             throw new UnableToDeSerializeException();

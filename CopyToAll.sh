@@ -24,7 +24,6 @@ configAppNameMap["mt17-object-store"]="store"
 
 declare -A configNameMap
 configNameMap["mt0-oauth2"]="AuthService"
-configNameMap["mt1-proxy"]="EdgeProxyService"
 configNameMap["mt2-user-profile"]="UserProfile"
 configNameMap["mt3-product"]="Product"
 configNameMap["mt4-messenger"]="Messenger"
@@ -33,6 +32,7 @@ configNameMap["mt6-payment"]="Payment"
 configNameMap["mt13-bbs"]="Bbs"
 configNameMap["mt15-saga-orchestrator"]="SagaOrchestrator"
 # exclude object store
+#configNameMap["mt1-proxy"]="EdgeProxyService"
 #configNameMap["mt17-object-store"]="ObjectStore"
 
 declare -A configPortMap

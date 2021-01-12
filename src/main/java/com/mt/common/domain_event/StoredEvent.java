@@ -20,12 +20,16 @@ public class StoredEvent {
     private Long id;
     private Long timestamp;
     private String name;
+    private boolean internal;
+    private String topic;
 
     public StoredEvent(DomainEvent aDomainEvent) {
         this.id = aDomainEvent.getId();
         this.eventBody = CommonDomainRegistry.customObjectSerializer().serialize(aDomainEvent);
         this.timestamp = aDomainEvent.getTimestamp();
         this.name = aDomainEvent.getClass().getName();
+        this.internal = aDomainEvent.isInternal();
+        this.topic = aDomainEvent.getTopic();
     }
 
 }

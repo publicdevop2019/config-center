@@ -1,0 +1,74 @@
+package com.mt.common.port.adapter.messaging;
+
+import com.mt.common.domain.model.CommonDomainRegistry;
+import com.mt.common.domain_event.EventStreamService;
+import com.mt.common.domain_event.StoredEvent;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.DeliverCallback;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
+
+import static com.mt.common.CommonConstant.EXCHANGE_NAME;
+
+@Slf4j
+@Component
+public class RabbitMQEventStreamService implements EventStreamService {
+    private static Channel channel;
+
+    static {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("localhost");
+        try (Connection connection = factory.newConnection();
+             Channel channel = connection.createChannel()) {
+            channel.exchangeDeclare(EXCHANGE_NAME, "topic");
+        } catch (IOException | TimeoutException e) {
+            log.error("unable to connect to rabbitmq", e);
+        }
+    }
+
+    @Override
+    public void subscribe(String appName, boolean internal, @Nullable String fixedQueueName, String topic, Consumer<StoredEvent> consumer) {
+        String routingKey = appName + "." + (internal ? "internal" : "external") + "." + topic;
+        String queueName;
+        if (fixedQueueName != null) {
+            queueName = fixedQueueName;
+        } else {
+            Long id = CommonDomainRegistry.uniqueIdGeneratorService().id();
+            queueName = Long.toString(id, 36);
+        }
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            log.debug("mq message received");
+            String s = new String(delivery.getBody(), StandardCharsets.UTF_8);
+            StoredEvent event = CommonDomainRegistry.customObjectSerializer().deserialize(s, StoredEvent.class);
+            consumer.accept(event);
+        };
+        try {
+            channel.queueDeclare(queueName, true, false, true, null);
+            channel.queueBind(queueName, EXCHANGE_NAME, routingKey);
+            channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
+            });
+        } catch (IOException e) {
+            log.error("unable create queue for {} with routing key {} and queue name {}", appName, routingKey, queueName);
+        }
+    }
+
+    @Override
+    public void next(String appName, boolean internal, String topic, StoredEvent event) {
+        String routingKey = appName + "." + (internal ? "internal" : "external") + "." + topic;
+        try {
+            channel.basicPublish(EXCHANGE_NAME, routingKey,
+                    null,
+                    CommonDomainRegistry.customObjectSerializer().serialize(event).getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            log.error("unable to publish message to rabbitmq", e);
+        }
+    }
+}

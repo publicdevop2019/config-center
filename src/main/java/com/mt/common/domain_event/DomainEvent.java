@@ -23,6 +23,8 @@ public class DomainEvent implements Serializable {
     private DomainId domainId;
 
     private Set<DomainId> domainIds;
+    private boolean internal = true;
+    private String topic;
 
     public DomainEvent(DomainId domainId) {
         setId(CommonDomainRegistry.uniqueIdGeneratorService().id());

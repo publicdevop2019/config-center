@@ -19,7 +19,7 @@ public class CommonConstant {
     public static final String EXCHANGE_ROLLBACK = "rollback";
     public static final String CACHE_QUERY_PREFIX = "-query";
     public static final String CACHE_ID_PREFIX = "-id";
-    public static final String EXCHANGE_NAME = "domain_event_exchange";
+    public static final String EXCHANGE_NAME = "mt_global_exchange";
     private CommonConstant() {
     }
 }

@@ -21,18 +21,6 @@ import static com.mt.common.CommonConstant.EXCHANGE_NAME;
 @Slf4j
 @Component
 public class RabbitMQEventStreamService implements EventStreamService {
-    private static Channel channel;
-
-    static {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
-        try (Connection connection = factory.newConnection();
-             Channel channel = connection.createChannel()) {
-            channel.exchangeDeclare(EXCHANGE_NAME, "topic");
-        } catch (IOException | TimeoutException e) {
-            log.error("unable to connect to rabbitmq", e);
-        }
-    }
 
     @Override
     public void subscribe(String appName, boolean internal, @Nullable String fixedQueueName, String topic, Consumer<StoredEvent> consumer) {
@@ -50,12 +38,15 @@ public class RabbitMQEventStreamService implements EventStreamService {
             StoredEvent event = CommonDomainRegistry.customObjectSerializer().deserialize(s, StoredEvent.class);
             consumer.accept(event);
         };
-        try {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("localhost");
+        try (Connection connection = factory.newConnection();
+             Channel channel = connection.createChannel()) {
             channel.queueDeclare(queueName, true, false, true, null);
             channel.queueBind(queueName, EXCHANGE_NAME, routingKey);
             channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
             });
-        } catch (IOException e) {
+        } catch (IOException | TimeoutException e) {
             log.error("unable create queue for {} with routing key {} and queue name {}", appName, routingKey, queueName);
         }
     }
@@ -63,11 +54,15 @@ public class RabbitMQEventStreamService implements EventStreamService {
     @Override
     public void next(String appName, boolean internal, String topic, StoredEvent event) {
         String routingKey = appName + "." + (internal ? "internal" : "external") + "." + topic;
-        try {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("localhost");
+        try (Connection connection = factory.newConnection();
+             Channel channel = connection.createChannel()) {
+            channel.exchangeDeclare(EXCHANGE_NAME, "topic");
             channel.basicPublish(EXCHANGE_NAME, routingKey,
                     null,
                     CommonDomainRegistry.customObjectSerializer().serialize(event).getBytes(StandardCharsets.UTF_8));
-        } catch (IOException e) {
+        } catch (IOException | TimeoutException e) {
             log.error("unable to publish message to rabbitmq", e);
         }
     }

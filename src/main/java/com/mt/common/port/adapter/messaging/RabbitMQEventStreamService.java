@@ -21,7 +21,6 @@ import static com.mt.common.CommonConstant.EXCHANGE_NAME;
 @Slf4j
 @Component
 public class RabbitMQEventStreamService implements EventStreamService {
-
     @Override
     public void subscribe(String appName, boolean internal, @Nullable String fixedQueueName, String topic, Consumer<StoredEvent> consumer) {
         String routingKey = appName + "." + (internal ? "internal" : "external") + "." + topic;
@@ -41,9 +40,10 @@ public class RabbitMQEventStreamService implements EventStreamService {
         };
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
-        try (Connection connection = factory.newConnection();
-             Channel channel = connection.createChannel()) {
-            channel.queueDeclare(queueName, true, false, true, null);
+        try  {
+            Connection connection = factory.newConnection();
+            Channel channel = connection.createChannel();
+            channel.queueDeclare(queueName, true, false, false, null);
             channel.queueBind(queueName, EXCHANGE_NAME, routingKey);
             channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
             });

@@ -37,6 +37,7 @@ public class RabbitMQEventStreamService implements EventStreamService {
             String s = new String(delivery.getBody(), StandardCharsets.UTF_8);
             StoredEvent event = CommonDomainRegistry.customObjectSerializer().deserialize(s, StoredEvent.class);
             consumer.accept(event);
+            log.debug("mq message consumed");
         };
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");

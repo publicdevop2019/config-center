@@ -41,7 +41,7 @@ public class ChangeRecord extends Auditable implements Aggregate {
     private byte[] requestBody;
     @Version
     private Integer version;
-    private HashSet<Long> deletedIds;
+    private HashSet<String> deletedIds;
     private OperationType operationType;
     private String query;
 

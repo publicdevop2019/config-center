@@ -7,9 +7,12 @@ import com.mt.common.sql.SumPagedRep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static com.mt.common.CommonConstant.CHANGE_REVOKED;
 import static com.mt.common.idempotent.model.ChangeRecord.CHANGE_ID;
@@ -33,6 +36,22 @@ public class ApplicationServiceIdempotentWrapper {
         } else {
             saveChangeRecord(command, changeId, OperationType.POST, "id:" + domainId.getDomainId(), null, null, clazz);
             return wrapper.get().getDomainId();
+        }
+    }
+
+    public <T> Set<String> idempotentDeleteByQuery(Object command, String changeId, Function<AppCreateChangeRecordCommand, Set<DomainId>> wrapper, Class<T> clazz) {
+        String entityType = getEntityName(clazz);
+        if (changeAlreadyExist(changeId, clazz) && changeAlreadyRevoked(changeId, clazz)) {
+            SumPagedRep<AppChangeRecordCardRep> appChangeRecordCardRepSumPagedRep = appChangeRecordApplicationService.readByQuery(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + entityType, null, "sc:1");
+            return appChangeRecordCardRepSumPagedRep.getData().get(0).getDeletedIds();
+        } else if (changeAlreadyExist(changeId, clazz) && !changeAlreadyRevoked(changeId, clazz)) {
+            SumPagedRep<AppChangeRecordCardRep> appChangeRecordCardRepSumPagedRep = appChangeRecordApplicationService.readByQuery(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + entityType, null, "sc:1");
+            return appChangeRecordCardRepSumPagedRep.getData().get(0).getDeletedIds();
+        } else if (!changeAlreadyExist(changeId, clazz) && changeAlreadyRevoked(changeId, clazz)) {
+            return Collections.emptySet();
+        } else {
+            AppCreateChangeRecordCommand changeRecordCommand = saveChangeRecord(command, changeId, OperationType.DELETE_BY_QUERY, null, null, null, clazz);
+            return wrapper.apply(changeRecordCommand).stream().map(DomainId::getDomainId).collect(Collectors.toSet());
         }
     }
 
@@ -60,7 +79,7 @@ public class ApplicationServiceIdempotentWrapper {
         return split[split.length - 1];
     }
 
-    protected <T> AppCreateChangeRecordCommand saveChangeRecord(Object requestBody, String changeId, OperationType operationType, String query, Set<Long> deletedIds, Object toBeReplaced, Class<T> clazz) {
+    protected <T> AppCreateChangeRecordCommand saveChangeRecord(Object requestBody, String changeId, OperationType operationType, String query, Set<String> deletedIds, Object toBeReplaced, Class<T> clazz) {
         AppCreateChangeRecordCommand changeRecord = new AppCreateChangeRecordCommand();
         changeRecord.setChangeId(changeId);
         changeRecord.setEntityType(getEntityName(clazz));

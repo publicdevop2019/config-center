@@ -19,7 +19,7 @@ public class AppChangeRecordCardRep {
     private String entityType;
     private String serviceBeanName;
 
-    private Set<Long> deletedIds;
+    private Set<String> deletedIds;
     private OperationType operationType;
     private String query;
     private Object replacedVersion;

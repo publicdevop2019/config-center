@@ -15,5 +15,5 @@ public class AppCreateChangeRecordCommand {
     private String query;
     private Object replacedVersion;
     private Object requestBody;
-    private Set<Long> deletedIds;
+    private Set<String> deletedIds;
 }

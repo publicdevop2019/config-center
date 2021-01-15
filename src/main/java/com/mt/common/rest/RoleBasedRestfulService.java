@@ -185,7 +185,7 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
             Set<Long> collect = data.stream().map(Aggregate::getId).collect(Collectors.toSet());
             String join = "id:" + String.join(".", collect.stream().map(Object::toString).collect(Collectors.toSet()));
             Integer execute = transactionTemplate.execute(transactionStatus -> {
-                saveChangeRecord(null, changeId, OperationType.DELETE_BY_QUERY, query, collect, null);
+                saveChangeRecord(null, changeId, OperationType.DELETE_BY_QUERY, query, collect.stream().map(Object::toString).collect(Collectors.toSet()), null);
                 return queryRegistry.deleteByQuery(role, join, entityClass);//delete only checked entity
             });
             data.forEach(this::postDelete);
@@ -361,7 +361,7 @@ public abstract class RoleBasedRestfulService<T extends Auditable & Aggregate, X
         return tSumPagedRep;
     }
 
-    protected void saveChangeRecord(Object requestBody, String changeId, OperationType operationType, String query, Set<Long> deletedIds, Object toBeReplaced) {
+    protected void saveChangeRecord(Object requestBody, String changeId, OperationType operationType, String query, Set<String> deletedIds, Object toBeReplaced) {
         AppCreateChangeRecordCommand changeRecord = new AppCreateChangeRecordCommand();
         changeRecord.setChangeId(changeId);
         changeRecord.setEntityType(getEntityName());

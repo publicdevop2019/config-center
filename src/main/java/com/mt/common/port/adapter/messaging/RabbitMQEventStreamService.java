@@ -48,7 +48,7 @@ public class RabbitMQEventStreamService implements EventStreamService {
             channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
             });
         } catch (IOException | TimeoutException e) {
-            log.error("unable create queue for {} with routing key {} and queue name {}", appName, routingKey, queueName);
+            log.error("unable create queue for {} with routing key {} and queue name {}", appName, routingKey, queueName,e);
         }
     }
 

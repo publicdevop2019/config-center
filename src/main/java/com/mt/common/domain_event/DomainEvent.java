@@ -13,7 +13,6 @@ import java.util.Set;
 
 @Getter
 @Setter(AccessLevel.PROTECTED)
-@NoArgsConstructor
 public class DomainEvent implements Serializable {
 
     private Long id;
@@ -36,5 +35,10 @@ public class DomainEvent implements Serializable {
         setId(CommonDomainRegistry.uniqueIdGeneratorService().id());
         setTimestamp(new Date().getTime());
         setDomainIds(domainIds);
+    }
+
+    public DomainEvent() {
+        setId(CommonDomainRegistry.uniqueIdGeneratorService().id());
+        setTimestamp(new Date().getTime());
     }
 }

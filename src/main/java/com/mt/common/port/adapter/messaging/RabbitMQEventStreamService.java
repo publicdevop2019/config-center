@@ -22,8 +22,8 @@ import static com.mt.common.CommonConstant.EXCHANGE_NAME;
 @Component
 public class RabbitMQEventStreamService implements EventStreamService {
     @Override
-    public void subscribe(String appName, boolean internal, @Nullable String fixedQueueName, String topic, Consumer<StoredEvent> consumer) {
-        String routingKey = appName + "." + (internal ? "internal" : "external") + "." + topic;
+    public void subscribe(String appName, boolean internal, @Nullable String fixedQueueName, Consumer<StoredEvent> consumer, String... topics) {
+        String routingKeyWithoutTopic = appName + "." + (internal ? "internal" : "external") + ".";
         String queueName;
         if (fixedQueueName != null) {
             queueName = fixedQueueName;
@@ -40,15 +40,17 @@ public class RabbitMQEventStreamService implements EventStreamService {
         };
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
-        try  {
+        try {
             Connection connection = factory.newConnection();
             Channel channel = connection.createChannel();
             channel.queueDeclare(queueName, true, false, false, null);
-            channel.queueBind(queueName, EXCHANGE_NAME, routingKey);
+            for (String topic : topics) {
+                channel.queueBind(queueName, EXCHANGE_NAME, routingKeyWithoutTopic + topic);
+            }
             channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
             });
         } catch (IOException | TimeoutException e) {
-            log.error("unable create queue for {} with routing key {} and queue name {}", appName, routingKey, queueName,e);
+            log.error("unable create queue for {} with routing key {} and queue name {}", appName, routingKeyWithoutTopic, queueName, e);
         }
     }
 

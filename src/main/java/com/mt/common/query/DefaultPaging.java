@@ -59,8 +59,8 @@ public class DefaultPaging {
         this.value = PAGING_NUM + ":" + pageNumber + "," + PAGING_SIZE + ":" + pageSize;
     }
 
-    public DefaultPaging nextPage() {
-        return new DefaultPaging(pageNumber + 1, pageSize);
+    public DefaultPaging pageOf(long pageNum) {
+        return new DefaultPaging(pageNum, pageSize);
     }
 
     private static class PagingParseException extends RuntimeException {

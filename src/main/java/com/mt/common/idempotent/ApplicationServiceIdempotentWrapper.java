@@ -1,6 +1,8 @@
 package com.mt.common.idempotent;
 
+import com.mt.common.domain.model.CommonDomainRegistry;
 import com.mt.common.domain.model.domainId.DomainId;
+import com.mt.common.domain_event.DomainEventPublisher;
 import com.mt.common.idempotent.command.AppCreateChangeRecordCommand;
 import com.mt.common.idempotent.representation.AppChangeRecordCardRep;
 import com.mt.common.sql.SumPagedRep;
@@ -32,6 +34,8 @@ public class ApplicationServiceIdempotentWrapper {
             SumPagedRep<AppChangeRecordCardRep> appChangeRecordCardRepSumPagedRep = appChangeRecordApplicationService.readByQuery(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + entityType, null, "sc:1");
             return appChangeRecordCardRepSumPagedRep.getData().get(0).getQuery().replace("id:", "");
         } else if (!changeAlreadyExist(changeId, clazz) && changeAlreadyRevoked(changeId, clazz)) {
+            //hanging tx
+            DomainEventPublisher.instance().publish(new HangingTxDetected(domainId,changeId));
             return "revoked";
         } else {
             saveChangeRecord(command, changeId, OperationType.POST, "id:" + domainId.getDomainId(), null, null, clazz);

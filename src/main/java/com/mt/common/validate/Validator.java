@@ -1,5 +1,6 @@
 package com.mt.common.validate;
 
+import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
@@ -13,20 +14,21 @@ public class Validator {
     private static final String NOT_EMPTY_MSG = "condition not match notEmpty";
     private static final String NO_NULL_MEMBER_MSG = "condition not match noNullMember";
     private static final String NUM_GREATER_OR_EQUAL_TO_MSG = "condition not match greaterThanOrEqualTo";
+    private static final String EMAIL_MSG = "condition not match isValidEmail";
     private static final String HAS_TEXT_MSG = "condition not match hasText";
     private static final String GREATER_OR_EQUAL_TO_MSG = "condition not match lengthGreaterThanOrEqualTo";
     private static final String LESS_OR_EQUAL_TO_MSG = "condition not match lengthLessThanOrEqualTo";
     private static final String TEXT_WHITE_LIST_MSG = "condition not match whitelistOnly";
     private static final Pattern TEXT_WHITE_LIST = Pattern.compile("[a-zA-Z0-9 +\\-x/:()\\u4E00-\\u9FFF]*");
 
-    public static void hasText(@Nullable String text, @Nullable String message) {
+    public static void notBlank(@Nullable String text, @Nullable String message) {
         if (!StringUtils.hasText(text)) {
             throw new IllegalArgumentException(message == null ? HAS_TEXT_MSG : message);
         }
     }
 
-    public static void hasText(@Nullable String text) {
-        hasText(text, null);
+    public static void notBlank(@Nullable String text) {
+        notBlank(text, null);
     }
 
     public static void notNull(@Nullable String text, @Nullable String message) {
@@ -118,5 +120,19 @@ public class Validator {
         if (value < min) {
             throw new IllegalArgumentException(message == null ? NUM_GREATER_OR_EQUAL_TO_MSG : message);
         }
+    }
+
+    public static void isEmail(String email) {
+        isEmail(email, null);
+    }
+
+    public static boolean isValidEmail(String email) {
+        return EmailValidator.getInstance().isValid(email);
+    }
+
+    public static void isEmail(String email, @Nullable String message) {
+        notNull(email);
+        if (!EmailValidator.getInstance().isValid(email))
+            throw new IllegalArgumentException(message == null ? EMAIL_MSG : message);
     }
 }

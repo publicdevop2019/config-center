@@ -8,6 +8,7 @@ import com.mt.common.sql.exception.UnsupportedQueryException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -105,10 +106,12 @@ public abstract class SelectQueryBuilder<T extends Auditable> extends PredicateC
             if (values[0].equals("size") && values[1] != null) {
                 pageSize = Integer.parseInt(values[1]);
             }
-            if (values[0].equals("by") && values[1] != null) {
-                sortBy = mappedSortBy.get(values[1]);
-                if (sortBy == null)
-                    throw new UnsupportedQueryException();
+            if (sortConverter == null) {
+                if (values[0].equals("by") && values[1] != null) {
+                    sortBy = mappedSortBy.get(values[1]);
+                    if (sortBy == null)
+                        throw new UnsupportedQueryException();
+                }
             }
             if (values[0].equals("order") && values[1] != null) {
                 sortOrder = Sort.Direction.fromString(values[1]);

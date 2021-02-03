@@ -1,5 +1,6 @@
 package com.mt.common.audit;
 
+import com.mt.common.validate.ValidationNotificationHandler;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -11,6 +12,7 @@ import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -18,7 +20,6 @@ import java.util.Date;
 @EntityListeners(AuditingEntityListener.class)
 @Data
 public class Auditable implements Serializable {
-
     public static final String ENTITY_MODIFIED_BY = "modifiedBy";
     public static final String ENTITY_MODIFIED_AT = "modifiedAt";
     public static final String ENTITY_DELETED = "deleted";
@@ -46,4 +47,6 @@ public class Auditable implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date restoredAt;
 
+    public void validate(@NotNull ValidationNotificationHandler handler) {
+    }
 }

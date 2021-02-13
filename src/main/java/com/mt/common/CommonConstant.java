@@ -20,6 +20,7 @@ public class CommonConstant {
     public static final String CACHE_QUERY_PREFIX = "-query";
     public static final String CACHE_ID_PREFIX = "-id";
     public static final String EXCHANGE_NAME = "mt_global_exchange";
+    public static final String DOMAIN_ID = "domainId";
     private CommonConstant() {
     }
 }

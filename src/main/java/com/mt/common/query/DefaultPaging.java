@@ -41,6 +41,13 @@ public class DefaultPaging {
         }
     }
 
+    public DefaultPaging(String pagingParamStr, Integer maxPageSize) {
+        this(pagingParamStr);
+        if (pageSize > maxPageSize) {
+            throw new PagingParseException();
+        }
+    }
+
     public long getPageNumber() {
         return pageNumber;
     }

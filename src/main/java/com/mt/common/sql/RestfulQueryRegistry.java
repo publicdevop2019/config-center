@@ -7,6 +7,7 @@ import com.mt.common.audit.Auditable;
 import com.mt.common.cache.CacheCriteria;
 import com.mt.common.idempotent.model.ChangeRecord;
 import com.mt.common.query.PageConfig;
+import com.mt.common.query.QueryCriteria;
 import com.mt.common.sql.builder.DeleteQueryBuilder;
 import com.mt.common.sql.builder.SelectQueryBuilder;
 import com.mt.common.sql.builder.UpdateQueryBuilder;
@@ -221,10 +222,10 @@ public abstract class RestfulQueryRegistry<T extends Auditable> {
         SelectQueryBuilder<T> selectQueryBuilder = this.selectQueryBuilder.get(roleEnum);
         if (selectQueryBuilder == null)
             throw new QueryBuilderNotFoundException();
-        List<T> select = selectQueryBuilder.select(query, new PageConfig(page, 1000), clazz);
+        List<T> select = selectQueryBuilder.select(new QueryCriteria(query), new PageConfig(page, 1000), clazz);
         Long aLong = null;
         if (!skipCount(config)) {
-            aLong = selectQueryBuilder.count(query, clazz);
+            aLong = selectQueryBuilder.count(new QueryCriteria(query), clazz);
         }
         return new SumPagedRep<>(select, aLong);
     }

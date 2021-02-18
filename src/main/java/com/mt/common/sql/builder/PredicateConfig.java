@@ -1,6 +1,7 @@
 package com.mt.common.sql.builder;
 
 import com.mt.common.audit.Auditable;
+import com.mt.common.query.QueryCriteria;
 import com.mt.common.sql.clause.SelectNotDeletedClause;
 import com.mt.common.sql.clause.WhereClause;
 import com.mt.common.sql.exception.UnknownWhereClauseException;
@@ -17,20 +18,18 @@ import java.util.Map;
 public class PredicateConfig<T extends Auditable> {
     protected Map<String, WhereClause<T>> supportedWhere = new HashMap<>();
 
-    protected Predicate getPredicate(String search, CriteriaBuilder cb, Root<T> root, AbstractQuery<?> query) {
+    protected Predicate getPredicate(QueryCriteria queryConfig, CriteriaBuilder cb, Root<T> root, AbstractQuery<?> query) {
         List<Predicate> results = new ArrayList<>();
-        if (search != null) {
-            String[] queryParams = search.split(",");
-            for (String param : queryParams) {
-                String[] split = param.split(":");
-                if (supportedWhere.get(split[0]) == null)
+        if (queryConfig != null) {
+            queryConfig.getParsed().forEach((k, v) -> {
+                if (supportedWhere.get(k) == null)
                     throw new UnknownWhereClauseException();
-                if (supportedWhere.get(split[0]) != null && !split[1].isBlank()) {
-                    WhereClause<T> tWhereClause = supportedWhere.get(split[0]);
-                    Predicate whereClause = tWhereClause.getWhereClause(split[1], cb, root, query);
+                if (supportedWhere.get(k) != null && !v.isBlank()) {
+                    WhereClause<T> tWhereClause = supportedWhere.get(k);
+                    Predicate whereClause = tWhereClause.getWhereClause(v, cb, root, query);
                     results.add(whereClause);
                 }
-            }
+            });
         }
         Predicate notSoftDeleted = new SelectNotDeletedClause<T>().getWhereClause(cb, root, query);
         results.add(notSoftDeleted);

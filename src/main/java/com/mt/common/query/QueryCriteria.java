@@ -1,15 +1,16 @@
 package com.mt.common.query;
 
 import com.mt.common.domain.model.domainId.DomainId;
+import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.Map;
-
-public class DefaultQuery {
+@Getter
+public class QueryCriteria {
     protected final String rawValue;
     protected final Map<String, String> parsed = new HashMap<>();
 
-    public DefaultQuery(String queryParam) {
+    public QueryCriteria(String queryParam) {
         this.rawValue = queryParam;
         if (queryParam != null) {
             String[] split = queryParam.split(",");
@@ -22,15 +23,11 @@ public class DefaultQuery {
         }
     }
 
-    public String value() {
-        return rawValue;
-    }
-
     public boolean isGetAll() {
         return parsed.isEmpty();
     }
 
-    public DefaultQuery(DomainId domainId) {
+    public QueryCriteria(DomainId domainId) {
         this("id:" + domainId.getDomainId());
     }
 

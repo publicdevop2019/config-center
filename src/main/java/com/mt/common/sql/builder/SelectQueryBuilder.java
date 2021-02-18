@@ -2,6 +2,7 @@ package com.mt.common.sql.builder;
 
 import com.mt.common.audit.Auditable;
 import com.mt.common.query.PageConfig;
+import com.mt.common.query.QueryCriteria;
 import com.mt.common.sql.clause.OrderClause;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -21,7 +22,7 @@ public abstract class SelectQueryBuilder<T extends Auditable> extends PredicateC
     protected OrderClause<T> sortConverter;
     protected Map<String, String> supportedSort = new HashMap<>();
 
-    public List<T> select(String search, @NotNull PageConfig page, @NotNull Class<T> clazz) {
+    public List<T> select(@NotNull QueryCriteria search, @NotNull PageConfig page, @NotNull Class<T> clazz) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<T> query = cb.createQuery(clazz);
         Root<T> root = query.from(clazz);
@@ -50,7 +51,7 @@ public abstract class SelectQueryBuilder<T extends Auditable> extends PredicateC
     }
 
 
-    public Long count(String search, Class<T> clazz) {
+    public Long count(QueryCriteria search, Class<T> clazz) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root<T> root = query.from(clazz);

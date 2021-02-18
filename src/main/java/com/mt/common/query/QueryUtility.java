@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 
 public class QueryUtility {
-    public static <T, S extends DefaultQuery> Set<T> getAllByQuery(BiFunction<S, PageConfig, SumPagedRep<T>> ofQuery, S query) {
+    public static <T, S extends QueryCriteria> Set<T> getAllByQuery(BiFunction<S, PageConfig, SumPagedRep<T>> ofQuery, S query) {
         PageConfig queryPagingParam = new PageConfig();
         SumPagedRep<T> tSumPagedRep = ofQuery.apply(query, queryPagingParam);
         if (tSumPagedRep.getData().size() == 0)

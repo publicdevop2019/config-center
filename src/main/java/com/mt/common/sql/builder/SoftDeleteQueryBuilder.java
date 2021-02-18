@@ -2,6 +2,7 @@ package com.mt.common.sql.builder;
 
 import com.mt.common.audit.Auditable;
 import com.mt.common.audit.AuditorAwareImpl;
+import com.mt.common.query.QueryCriteria;
 import com.mt.common.sql.clause.SelectFieldIdWhereClause;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ public abstract class SoftDeleteQueryBuilder<T extends Auditable> extends Predic
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaUpdate<T> criteriaUpdate = cb.createCriteriaUpdate(clazz);
         Root<T> root = criteriaUpdate.from(clazz);
-        Predicate and = getPredicate(search, cb, root, null);
+        Predicate and = getPredicate(new QueryCriteria(search), cb, root, null);
         criteriaUpdate.where(and);
         criteriaUpdate.set(ENTITY_DELETED, true);
         Optional<String> currentAuditor = AuditorAwareImpl.getAuditor();

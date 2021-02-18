@@ -9,7 +9,7 @@ import com.mt.common.jwt.IllegalJwtException;
 import com.mt.common.jwt.JwtTokenExtractException;
 import com.mt.common.jwt.JwtTokenRetrievalException;
 import com.mt.common.logging.ErrorMessage;
-import com.mt.common.query.DefaultQuery;
+import com.mt.common.query.QueryCriteria;
 import com.mt.common.rest.exception.AggregateNotExistException;
 import com.mt.common.rest.exception.AggregateOutdatedException;
 import com.mt.common.rest.exception.UnsupportedPatchOperationException;
@@ -53,7 +53,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ValidationFailedException.class,
             AggregateOutdatedException.class,
             IllegalJwtException.class,
-            DefaultQuery.QueryParseException.class
+            QueryCriteria.QueryParseException.class
     })
     protected ResponseEntity<Object> handle400Exception(RuntimeException ex, WebRequest request) {
         ErrorMessage errorMessage = new ErrorMessage(ex);

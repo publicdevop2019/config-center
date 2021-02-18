@@ -1,5 +1,6 @@
 package com.mt.common.sql.builder;
 
+import com.mt.common.audit.Auditable;
 import com.mt.common.audit.AuditorAwareImpl;
 import com.mt.common.sql.clause.SelectFieldIdWhereClause;
 import lombok.extern.slf4j.Slf4j;
@@ -17,12 +18,12 @@ import static com.mt.common.CommonConstant.COMMON_ENTITY_ID;
 import static com.mt.common.audit.Auditable.*;
 
 @Slf4j
-public abstract class SoftDeleteQueryBuilder<T> extends PredicateConfig<T> implements DeleteQueryBuilder<T>{
+public abstract class SoftDeleteQueryBuilder<T extends Auditable> extends PredicateConfig<T> implements DeleteQueryBuilder<T>{
     @Autowired
     protected EntityManager em;
 
     protected SoftDeleteQueryBuilder() {
-        supportedWhereField.put(COMMON_ENTITY_ID, new SelectFieldIdWhereClause<>());
+        supportedWhere.put(COMMON_ENTITY_ID, new SelectFieldIdWhereClause<>());
     }
     @Override
     public Integer delete(String search, Class<T> clazz) {

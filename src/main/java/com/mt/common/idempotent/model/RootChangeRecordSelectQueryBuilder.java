@@ -13,9 +13,9 @@ import static com.mt.common.idempotent.model.ChangeRecord.ENTITY_TYPE;
 @Component
 public class RootChangeRecordSelectQueryBuilder extends SelectQueryBuilder<ChangeRecord> {
     RootChangeRecordSelectQueryBuilder() {
-        supportedWhereField.put(ENTITY_TYPE, new SelectFieldStringEqualClause<>(ENTITY_TYPE));
-        supportedWhereField.put(CHANGE_ID, new SelectFieldStringEqualClause<>(CHANGE_ID));
-        allowEmptyClause = true;
+        supportedWhere.put(ENTITY_TYPE, new SelectFieldStringEqualClause<>(ENTITY_TYPE));
+        supportedWhere.put(CHANGE_ID, new SelectFieldStringEqualClause<>(CHANGE_ID));
+//        allowEmptyClause = true;
     }
 
     @Autowired

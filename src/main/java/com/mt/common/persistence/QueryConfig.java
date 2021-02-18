@@ -1,7 +1,7 @@
 package com.mt.common.persistence;
 
 public class QueryConfig {
-    private String value;
+    private final String value;
 
     public String value() {
         return value;
@@ -9,5 +9,13 @@ public class QueryConfig {
 
     public QueryConfig(String configParam) {
         value = configParam;
+    }
+
+    public QueryConfig() {
+        value = null;
+    }
+
+    public boolean isSkipCount() {
+        return value != null && value.contains("sc:1");
     }
 }

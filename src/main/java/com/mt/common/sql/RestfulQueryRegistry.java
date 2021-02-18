@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mt.common.audit.Auditable;
 import com.mt.common.cache.CacheCriteria;
 import com.mt.common.idempotent.model.ChangeRecord;
+import com.mt.common.query.PageConfig;
 import com.mt.common.sql.builder.DeleteQueryBuilder;
 import com.mt.common.sql.builder.SelectQueryBuilder;
 import com.mt.common.sql.builder.UpdateQueryBuilder;
@@ -50,6 +51,7 @@ public abstract class RestfulQueryRegistry<T extends Auditable> {
         APP,
         PUBLIC
     }
+
     {
         cacheable.put(RoleEnum.USER, true);
         cacheable.put(RoleEnum.ADMIN, true);
@@ -57,6 +59,7 @@ public abstract class RestfulQueryRegistry<T extends Auditable> {
         cacheable.put(RoleEnum.PUBLIC, true);
         cacheable.put(RoleEnum.ROOT, true);
     }
+
     @PostConstruct
     protected void configQueryBuilder() {
 
@@ -218,10 +221,10 @@ public abstract class RestfulQueryRegistry<T extends Auditable> {
         SelectQueryBuilder<T> selectQueryBuilder = this.selectQueryBuilder.get(roleEnum);
         if (selectQueryBuilder == null)
             throw new QueryBuilderNotFoundException();
-        List<T> select = selectQueryBuilder.select(query, page, clazz);
+        List<T> select = selectQueryBuilder.select(query, new PageConfig(page, 1000), clazz);
         Long aLong = null;
         if (!skipCount(config)) {
-            aLong = selectQueryBuilder.selectCount(query, clazz);
+            aLong = selectQueryBuilder.count(query, clazz);
         }
         return new SumPagedRep<>(select, aLong);
     }

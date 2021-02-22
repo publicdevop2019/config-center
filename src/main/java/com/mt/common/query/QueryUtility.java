@@ -1,9 +1,13 @@
 package com.mt.common.query;
 
+import com.mt.common.audit.Auditable;
+import com.mt.common.persistence.QueryConfig;
 import com.mt.common.sql.SumPagedRep;
+import com.mt.common.sql.builder.SelectQueryBuilder;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
 
@@ -21,5 +25,14 @@ public class QueryUtility {
             data.addAll(ofQuery.apply(query, queryPagingParam.pageOf(a)).getData());
         }
         return data;
+    }
+
+    public static <T extends Auditable> SumPagedRep<T> pagedQuery(SelectQueryBuilder<T> queryBuilder, QueryCriteria query, PageConfig page, QueryConfig config, Class<T> clazz) {
+        List<T> select = queryBuilder.select(query, page, clazz);
+        Long aLong = null;
+        if (config.count()) {
+            aLong = queryBuilder.count(query, clazz);
+        }
+        return new SumPagedRep<>(select, aLong);
     }
 }

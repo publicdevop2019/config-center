@@ -39,8 +39,6 @@ public class ChangeRecord extends Auditable implements Aggregate {
     @Lob
     @Column(columnDefinition = "BLOB")
     private byte[] requestBody;
-    @Version
-    private Integer version;
     private HashSet<String> deletedIds;
     private OperationType operationType;
     private String query;

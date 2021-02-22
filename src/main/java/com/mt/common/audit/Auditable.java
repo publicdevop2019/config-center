@@ -1,17 +1,17 @@
 package com.mt.common.audit;
 
+import com.mt.common.rest.exception.AggregateOutdatedException;
 import com.mt.common.validate.ValidationNotificationHandler;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.EntityListeners;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
@@ -46,6 +46,15 @@ public class Auditable implements Serializable {
     private String restoredBy;
     @Temporal(TemporalType.TIMESTAMP)
     private Date restoredAt;
+    @Version
+    @Setter(AccessLevel.NONE)
+    private Integer version;
+
+    protected void checkVersion(Integer version) {
+        if (!getVersion().equals(version)) {
+            throw new AggregateOutdatedException();
+        }
+    }
 
     public void validate(@NotNull ValidationNotificationHandler handler) {
     }

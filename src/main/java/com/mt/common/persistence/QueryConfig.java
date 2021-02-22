@@ -15,7 +15,7 @@ public class QueryConfig {
         value = null;
     }
 
-    public boolean isSkipCount() {
-        return value != null && value.contains("sc:1");
+    public boolean count() {
+        return value == null || value.contains("sc:1");
     }
 }

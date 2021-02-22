@@ -1,8 +1,12 @@
 package com.mt.common.sql;
 
+import com.mt.common.CommonConstant;
+import com.mt.common.domain.model.CommonDomainRegistry;
+import com.mt.common.idempotent.exception.RollbackNotSupportedException;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * used for json patch and create/delete operation
@@ -31,5 +35,19 @@ public class PatchCommand implements Comparable<PatchCommand>, Serializable {
     private String parseDomainId(String path) {
         String[] split = path.split("/");
         return split[1];
+    }
+
+    public static List<PatchCommand> buildRollbackCommand(List<PatchCommand> patchCommands) {
+        List<PatchCommand> deepCopy = CommonDomainRegistry.customObjectSerializer().deepCopy(patchCommands);
+        deepCopy.forEach(e -> {
+            if (e.getOp().equalsIgnoreCase(CommonConstant.PATCH_OP_TYPE_SUM)) {
+                e.setOp(CommonConstant.PATCH_OP_TYPE_DIFF);
+            } else if (e.getOp().equalsIgnoreCase(CommonConstant.PATCH_OP_TYPE_DIFF)) {
+                e.setOp(CommonConstant.PATCH_OP_TYPE_SUM);
+            } else {
+                throw new RollbackNotSupportedException();
+            }
+        });
+        return deepCopy;
     }
 }

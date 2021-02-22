@@ -1,10 +1,13 @@
 package com.mt.common.query;
 
+import com.mt.common.CommonConstant;
 import com.mt.common.domain.model.domainId.DomainId;
 import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+
 @Getter
 public class QueryCriteria {
     protected final String rawValue;
@@ -28,7 +31,11 @@ public class QueryCriteria {
     }
 
     public QueryCriteria(DomainId domainId) {
-        this("id:" + domainId.getDomainId());
+        this(CommonConstant.COMMON_ENTITY_ID + CommonConstant.QUERY_DELIMITER + domainId.getDomainId());
+    }
+
+    public QueryCriteria(Set<String> domainIds) {
+        this(CommonConstant.COMMON_ENTITY_ID + CommonConstant.QUERY_DELIMITER + String.join(CommonConstant.QUERY_OR_DELIMITER, domainIds));
     }
 
     public static class QueryParseException extends RuntimeException {

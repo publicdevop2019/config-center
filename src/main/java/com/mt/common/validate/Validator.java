@@ -135,7 +135,7 @@ public class Validator {
     }
 
     public static void greaterThanOrEqualTo(BigDecimal value, BigDecimal min, @Nullable String message) {
-        if (value.compareTo(min) >= 0) {
+        if (value.compareTo(min) < 0) {
             throw new IllegalArgumentException(message == null ? DEC_GREATER_OR_EQUAL_TO_MSG : message);
         }
     }
@@ -145,7 +145,7 @@ public class Validator {
     }
 
     public static void greaterThan(BigDecimal value, BigDecimal min, @Nullable String message) {
-        if (value.compareTo(min) > 0) {
+        if (value.compareTo(min) <= 0) {
             throw new IllegalArgumentException(message == null ? DEC_GREATER_TO_MSG : message);
         }
     }

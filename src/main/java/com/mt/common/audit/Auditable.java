@@ -50,7 +50,7 @@ public class Auditable implements Serializable {
     @Setter(AccessLevel.NONE)
     private Integer version;
 
-    protected void checkVersion(Integer version) {
+    public void checkVersion(Integer version) {
         if (!getVersion().equals(version)) {
             throw new AggregateOutdatedException();
         }

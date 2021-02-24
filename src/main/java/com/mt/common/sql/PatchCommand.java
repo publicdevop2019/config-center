@@ -38,7 +38,7 @@ public class PatchCommand implements Comparable<PatchCommand>, Serializable {
     }
 
     public static List<PatchCommand> buildRollbackCommand(List<PatchCommand> patchCommands) {
-        List<PatchCommand> deepCopy = CommonDomainRegistry.customObjectSerializer().deepCopy(patchCommands);
+        List<PatchCommand> deepCopy = CommonDomainRegistry.customObjectSerializer().nativeDeepCopy(patchCommands);
         deepCopy.forEach(e -> {
             if (e.getOp().equalsIgnoreCase(CommonConstant.PATCH_OP_TYPE_SUM)) {
                 e.setOp(CommonConstant.PATCH_OP_TYPE_DIFF);

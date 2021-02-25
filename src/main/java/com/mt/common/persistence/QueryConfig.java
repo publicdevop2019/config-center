@@ -15,6 +15,11 @@ public class QueryConfig {
         value = null;
     }
 
+    public static QueryConfig skip() {
+
+        return new QueryConfig("sc:1");
+    }
+
     public boolean count() {
         return value == null || value.contains("sc:1");
     }

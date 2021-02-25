@@ -1,8 +1,8 @@
 package com.mt.common.sql;
 
 import com.mt.common.CommonConstant;
-import com.mt.common.domain.model.CommonDomainRegistry;
-import com.mt.common.idempotent.exception.RollbackNotSupportedException;
+import com.mt.common.domain.CommonDomainRegistry;
+import com.mt.common.application.idempotent.exception.RollbackNotSupportedException;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -38,7 +38,7 @@ public class PatchCommand implements Comparable<PatchCommand>, Serializable {
     }
 
     public static List<PatchCommand> buildRollbackCommand(List<PatchCommand> patchCommands) {
-        List<PatchCommand> deepCopy = CommonDomainRegistry.customObjectSerializer().nativeDeepCopy(patchCommands);
+        List<PatchCommand> deepCopy = CommonDomainRegistry.getCustomObjectSerializer().nativeDeepCopy(patchCommands);
         deepCopy.forEach(e -> {
             if (e.getOp().equalsIgnoreCase(CommonConstant.PATCH_OP_TYPE_SUM)) {
                 e.setOp(CommonConstant.PATCH_OP_TYPE_DIFF);

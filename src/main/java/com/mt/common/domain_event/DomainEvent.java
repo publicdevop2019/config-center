@@ -1,10 +1,9 @@
 package com.mt.common.domain_event;
 
-import com.mt.common.domain.model.CommonDomainRegistry;
+import com.mt.common.domain.CommonDomainRegistry;
 import com.mt.common.domain.model.domainId.DomainId;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
@@ -26,19 +25,19 @@ public class DomainEvent implements Serializable {
     private String topic;
 
     public DomainEvent(DomainId domainId) {
-        setId(CommonDomainRegistry.uniqueIdGeneratorService().id());
+        setId(CommonDomainRegistry.getUniqueIdGeneratorService().id());
         setTimestamp(new Date().getTime());
         setDomainId(domainId);
     }
 
     public DomainEvent(Set<DomainId> domainIds) {
-        setId(CommonDomainRegistry.uniqueIdGeneratorService().id());
+        setId(CommonDomainRegistry.getUniqueIdGeneratorService().id());
         setTimestamp(new Date().getTime());
         setDomainIds(domainIds);
     }
 
     public DomainEvent() {
-        setId(CommonDomainRegistry.uniqueIdGeneratorService().id());
+        setId(CommonDomainRegistry.getUniqueIdGeneratorService().id());
         setTimestamp(new Date().getTime());
     }
 }

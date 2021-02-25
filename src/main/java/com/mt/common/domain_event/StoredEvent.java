@@ -1,6 +1,6 @@
 package com.mt.common.domain_event;
 
-import com.mt.common.domain.model.CommonDomainRegistry;
+import com.mt.common.domain.CommonDomainRegistry;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -26,7 +26,7 @@ public class StoredEvent implements Serializable {
 
     public StoredEvent(DomainEvent aDomainEvent) {
         this.id = aDomainEvent.getId();
-        this.eventBody = CommonDomainRegistry.customObjectSerializer().serialize(aDomainEvent);
+        this.eventBody = CommonDomainRegistry.getCustomObjectSerializer().serialize(aDomainEvent);
         this.timestamp = aDomainEvent.getTimestamp();
         this.name = aDomainEvent.getClass().getName();
         this.internal = aDomainEvent.isInternal();

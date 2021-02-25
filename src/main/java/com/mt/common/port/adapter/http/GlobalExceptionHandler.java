@@ -1,10 +1,8 @@
 package com.mt.common.port.adapter.http;
 
 import com.mt.common.CommonConstant;
-import com.mt.common.idempotent.exception.ChangeNotFoundException;
-import com.mt.common.idempotent.exception.CustomByteArraySerializationException;
-import com.mt.common.idempotent.exception.HangingTransactionException;
-import com.mt.common.idempotent.exception.RollbackNotSupportedException;
+import com.mt.common.application.idempotent.exception.ChangeNotFoundException;
+import com.mt.common.application.idempotent.exception.RollbackNotSupportedException;
 import com.mt.common.jwt.IllegalJwtException;
 import com.mt.common.jwt.JwtTokenExtractException;
 import com.mt.common.jwt.JwtTokenRetrievalException;
@@ -14,7 +12,7 @@ import com.mt.common.rest.exception.AggregateNotExistException;
 import com.mt.common.rest.exception.AggregateOutdatedException;
 import com.mt.common.rest.exception.UnsupportedPatchOperationException;
 import com.mt.common.rest.exception.UpdateFiledValueException;
-import com.mt.common.serializer.JacksonObjectSerializer;
+import com.mt.common.infrastructure.JacksonObjectSerializer;
 import com.mt.common.sql.exception.*;
 import com.mt.common.validate.ValidationErrorException;
 import com.mt.common.validate.ValidationFailedException;
@@ -41,7 +39,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             EmptyWhereClauseException.class,
             UnsupportedPatchOperationException.class,
             UpdateFiledValueException.class,
-            HangingTransactionException.class,
             RollbackNotSupportedException.class,
             PatchCommandExpectNotMatchException.class,
             AggregateNotExistException.class,
@@ -68,7 +65,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             JacksonObjectSerializer.UnableToDeepCopyListException.class,
             JacksonObjectSerializer.UnableToDeSerializeException.class,
             JacksonObjectSerializer.UnableToSerializeException.class,
-            CustomByteArraySerializationException.class,
             ValidationErrorException.class
     })
     protected ResponseEntity<Object> handle500Exception(RuntimeException ex, WebRequest request) {

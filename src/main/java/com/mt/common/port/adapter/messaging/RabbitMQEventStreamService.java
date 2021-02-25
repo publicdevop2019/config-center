@@ -1,6 +1,6 @@
 package com.mt.common.port.adapter.messaging;
 
-import com.mt.common.domain.model.CommonDomainRegistry;
+import com.mt.common.domain.CommonDomainRegistry;
 import com.mt.common.domain_event.EventStreamService;
 import com.mt.common.domain_event.StoredEvent;
 import com.rabbitmq.client.Channel;
@@ -28,13 +28,13 @@ public class RabbitMQEventStreamService implements EventStreamService {
         if (fixedQueueName != null) {
             queueName = fixedQueueName;
         } else {
-            Long id = CommonDomainRegistry.uniqueIdGeneratorService().id();
+            Long id = CommonDomainRegistry.getUniqueIdGeneratorService().id();
             queueName = Long.toString(id, 36);
         }
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             log.debug("mq message received");
             String s = new String(delivery.getBody(), StandardCharsets.UTF_8);
-            StoredEvent event = CommonDomainRegistry.customObjectSerializer().deserialize(s, StoredEvent.class);
+            StoredEvent event = CommonDomainRegistry.getCustomObjectSerializer().deserialize(s, StoredEvent.class);
             consumer.accept(event);
             log.debug("mq message consumed");
         };
@@ -64,7 +64,7 @@ public class RabbitMQEventStreamService implements EventStreamService {
             channel.exchangeDeclare(EXCHANGE_NAME, "topic");
             channel.basicPublish(EXCHANGE_NAME, routingKey,
                     null,
-                    CommonDomainRegistry.customObjectSerializer().serialize(event).getBytes(StandardCharsets.UTF_8));
+                    CommonDomainRegistry.getCustomObjectSerializer().serialize(event).getBytes(StandardCharsets.UTF_8));
         } catch (IOException | TimeoutException e) {
             log.error("unable to publish message to rabbitmq", e);
         }

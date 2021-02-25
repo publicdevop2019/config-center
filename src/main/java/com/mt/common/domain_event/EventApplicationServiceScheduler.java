@@ -1,6 +1,6 @@
 package com.mt.common.domain_event;
 
-import com.mt.common.domain.model.CommonDomainRegistry;
+import com.mt.common.domain.CommonDomainRegistry;
 import com.mt.common.notification.PublishedEventTracker;
 import com.mt.common.notification.PublishedEventTrackerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ public class EventApplicationServiceScheduler {
         List<StoredEvent> storedEvents = eventStore.allStoredEventsSince(eventTracker.getLastPublishedEventId());
         if (!storedEvents.isEmpty()) {
             for (StoredEvent event : storedEvents) {
-                CommonDomainRegistry.eventStreamService().next(appName, event.isInternal(), event.getTopic(), event);
+                CommonDomainRegistry.getEventStreamService().next(appName, event.isInternal(), event.getTopic(), event);
             }
             trackerRepository
                     .trackMostRecentPublishedNotification(eventTracker, storedEvents);

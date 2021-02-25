@@ -3,19 +3,19 @@ package com.mt.common.port.adapter.http;
 import com.mt.common.CommonConstant;
 import com.mt.common.application.idempotent.exception.ChangeNotFoundException;
 import com.mt.common.application.idempotent.exception.RollbackNotSupportedException;
-import com.mt.common.jwt.IllegalJwtException;
-import com.mt.common.jwt.JwtTokenExtractException;
-import com.mt.common.jwt.JwtTokenRetrievalException;
-import com.mt.common.logging.ErrorMessage;
-import com.mt.common.query.QueryCriteria;
-import com.mt.common.rest.exception.AggregateNotExistException;
-import com.mt.common.rest.exception.AggregateOutdatedException;
-import com.mt.common.rest.exception.UnsupportedPatchOperationException;
-import com.mt.common.rest.exception.UpdateFiledValueException;
+import com.mt.common.domain.model.jwt.IllegalJwtException;
+import com.mt.common.domain.model.jwt.JwtTokenExtractException;
+import com.mt.common.domain.model.jwt.JwtTokenRetrievalException;
+import com.mt.common.domain.model.logging.ErrorMessage;
+import com.mt.common.domain.model.restful.query.QueryCriteria;
+import com.mt.common.domain.model.restful.exception.AggregateNotExistException;
+import com.mt.common.domain.model.restful.exception.AggregateOutdatedException;
+import com.mt.common.domain.model.restful.exception.UnsupportedPatchOperationException;
+import com.mt.common.domain.model.restful.exception.UpdateFiledValueException;
+import com.mt.common.domain.model.sql.builder.PredicateConfig;
+import com.mt.common.domain.model.sql.builder.UpdateQueryBuilder;
+import com.mt.common.domain.model.sql.exception.UnsupportedQueryException;
 import com.mt.common.infrastructure.JacksonObjectSerializer;
-import com.mt.common.sql.exception.*;
-import com.mt.common.validate.ValidationErrorException;
-import com.mt.common.validate.ValidationFailedException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -36,18 +36,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ObjectOptimisticLockingFailureException.class,
             JwtTokenExtractException.class,
             UnsupportedQueryException.class,
-            EmptyWhereClauseException.class,
             UnsupportedPatchOperationException.class,
             UpdateFiledValueException.class,
             RollbackNotSupportedException.class,
-            PatchCommandExpectNotMatchException.class,
+            UpdateQueryBuilder.PatchCommandExpectNotMatchException.class,
             AggregateNotExistException.class,
             JacksonObjectSerializer.UnableToJsonPatchException.class,
-            QueryBuilderNotFoundException.class,
-            EmptyQueryValueException.class,
-            UnknownWhereClauseException.class,
+            PredicateConfig.UnknownWhereClauseException.class,
             ChangeNotFoundException.class,
-            ValidationFailedException.class,
             AggregateOutdatedException.class,
             IllegalJwtException.class,
             QueryCriteria.QueryParseException.class
@@ -65,7 +61,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             JacksonObjectSerializer.UnableToDeepCopyListException.class,
             JacksonObjectSerializer.UnableToDeSerializeException.class,
             JacksonObjectSerializer.UnableToSerializeException.class,
-            ValidationErrorException.class
     })
     protected ResponseEntity<Object> handle500Exception(RuntimeException ex, WebRequest request) {
         ErrorMessage errorMessage = new ErrorMessage(ex);

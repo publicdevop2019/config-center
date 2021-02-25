@@ -3,7 +3,7 @@ package com.mt.common.domain;
 
 import com.mt.common.domain.model.idempotent.ChangeRecordRepository;
 import com.mt.common.domain.model.unique_id.UniqueIdGeneratorService;
-import com.mt.common.domain_event.EventStreamService;
+import com.mt.common.domain.model.domain_event.EventStreamService;
 import com.mt.common.domain.model.serializer.CustomObjectSerializer;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;

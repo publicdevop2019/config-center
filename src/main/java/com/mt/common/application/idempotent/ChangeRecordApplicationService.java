@@ -3,9 +3,9 @@ package com.mt.common.application.idempotent;
 import com.mt.common.domain.CommonDomainRegistry;
 import com.mt.common.domain.model.idempotent.ChangeRecord;
 import com.mt.common.domain.model.idempotent.ChangeRecordQuery;
-import com.mt.common.persistence.QueryConfig;
-import com.mt.common.query.PageConfig;
-import com.mt.common.sql.SumPagedRep;
+import com.mt.common.domain.model.restful.query.QueryConfig;
+import com.mt.common.domain.model.restful.query.PageConfig;
+import com.mt.common.domain.model.restful.SumPagedRep;
 import org.springframework.stereotype.Service;
 
 @Service

@@ -14,9 +14,9 @@
 
 package com.mt.common.port.adapter.persistence.event_tracker;
 
-import com.mt.common.domain_event.StoredEvent;
-import com.mt.common.notification.PublishedEventTracker;
-import com.mt.common.notification.PublishedEventTrackerRepository;
+import com.mt.common.domain.model.domain_event.StoredEvent;
+import com.mt.common.domain.model.notification.PublishedEventTracker;
+import com.mt.common.domain.model.notification.PublishedEventTrackerRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

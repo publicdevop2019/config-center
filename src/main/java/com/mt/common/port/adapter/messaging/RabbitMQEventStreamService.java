@@ -1,8 +1,8 @@
 package com.mt.common.port.adapter.messaging;
 
 import com.mt.common.domain.CommonDomainRegistry;
-import com.mt.common.domain_event.EventStreamService;
-import com.mt.common.domain_event.StoredEvent;
+import com.mt.common.domain.model.domain_event.EventStreamService;
+import com.mt.common.domain.model.domain_event.StoredEvent;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;

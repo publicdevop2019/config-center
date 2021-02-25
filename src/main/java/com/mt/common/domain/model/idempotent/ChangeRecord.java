@@ -2,7 +2,7 @@ package com.mt.common.domain.model.idempotent;
 
 import com.fasterxml.jackson.databind.JsonSerializable;
 import com.mt.common.application.idempotent.CreateChangeRecordCommand;
-import com.mt.common.audit.Auditable;
+import com.mt.common.domain.model.audit.Auditable;
 import com.mt.common.domain.CommonDomainRegistry;
 import lombok.Data;
 import lombok.NoArgsConstructor;

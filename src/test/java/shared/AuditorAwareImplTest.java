@@ -1,6 +1,6 @@
 package shared;
 
-import com.mt.common.audit.AuditorAwareImpl;
+import com.mt.common.infrastructure.audit.SpringDataJpaConfig;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,7 +11,7 @@ import java.util.Optional;
 @RunWith(MockitoJUnitRunner.class)
 public class AuditorAwareImplTest {
 
-    AuditorAwareImpl auditorAware = new AuditorAwareImpl();
+    SpringDataJpaConfig.AuditorAwareImpl auditorAware = new SpringDataJpaConfig.AuditorAwareImpl();
 
     @Test
     public void getCurrentAuditor_noAuth() {

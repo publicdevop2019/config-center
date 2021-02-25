@@ -6,11 +6,9 @@ import com.mt.common.application.idempotent.ChangeRecordApplicationService;
 import com.mt.common.application.idempotent.CreateChangeRecordCommand;
 import com.mt.common.application.idempotent.exception.ChangeNotFoundException;
 import com.mt.common.domain.model.domainId.DomainId;
-import com.mt.common.domain.model.idempotent.ChangeRecord;
-import com.mt.common.domain.model.idempotent.OperationType;
 import com.mt.common.domain.model.idempotent.event.HangingTxDetected;
-import com.mt.common.domain_event.DomainEventPublisher;
-import com.mt.common.sql.SumPagedRep;
+import com.mt.common.domain.model.domain_event.DomainEventPublisher;
+import com.mt.common.domain.model.restful.SumPagedRep;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

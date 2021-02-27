@@ -1,5 +1,6 @@
 package com.mt.common.domain.model.sql.builder;
 
+import com.mt.common.CommonConstant;
 import com.mt.common.domain.model.audit.Auditable;
 import com.mt.common.domain.model.restful.query.PageConfig;
 import com.mt.common.domain.model.restful.query.QueryCriteria;
@@ -36,9 +37,17 @@ public abstract class SelectQueryBuilder<T extends Auditable> extends PredicateC
         } else {
             Order order;
             if (page.isSortOrderAsc()) {
-                order = cb.asc(root.get(page.getSortBy()));
+                if (CommonConstant.COMMON_ENTITY_ID.equalsIgnoreCase(page.getSortBy()) && !CommonConstant.COMMON_ENTITY_ID.equalsIgnoreCase(supportedSort.get(page.getSortBy()))) {
+                    order = cb.asc(root.get(supportedSort.get(page.getSortBy())).get(CommonConstant.DOMAIN_ID));
+                } else {
+                    order = cb.asc(root.get(supportedSort.get(page.getSortBy())));
+                }
             } else {
-                order = cb.desc(root.get(page.getSortBy()));
+                if (CommonConstant.COMMON_ENTITY_ID.equalsIgnoreCase(page.getSortBy()) && !CommonConstant.COMMON_ENTITY_ID.equalsIgnoreCase(supportedSort.get(page.getSortBy()))) {
+                    order = cb.desc(root.get(supportedSort.get(page.getSortBy())).get(CommonConstant.DOMAIN_ID));
+                } else {
+                    order = cb.desc(root.get(supportedSort.get(page.getSortBy())));
+                }
             }
             query.orderBy(order);
         }

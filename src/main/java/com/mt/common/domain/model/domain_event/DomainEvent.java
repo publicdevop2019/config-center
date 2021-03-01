@@ -9,9 +9,9 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
-
 @Getter
 @Setter(AccessLevel.PROTECTED)
+//cannot be abstract due to serialization issue
 public class DomainEvent implements Serializable {
 
     private Long id;

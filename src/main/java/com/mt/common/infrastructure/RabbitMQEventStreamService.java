@@ -1,4 +1,4 @@
-package com.mt.common.port.adapter.messaging;
+package com.mt.common.infrastructure;
 
 import com.mt.common.domain.CommonDomainRegistry;
 import com.mt.common.domain.model.domain_event.EventStreamService;

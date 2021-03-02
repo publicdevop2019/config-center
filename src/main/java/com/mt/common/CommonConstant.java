@@ -23,6 +23,8 @@ public class CommonConstant {
     public static final String CACHE_ID_PREFIX = "-id";
     public static final String EXCHANGE_NAME = "mt_global_exchange";
     public static final String DOMAIN_ID = "domainId";
+    public static final String VERSION = "version";
+
     private CommonConstant() {
     }
 }

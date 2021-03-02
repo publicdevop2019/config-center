@@ -1,5 +1,6 @@
 package com.mt.common.domain.model.sql.builder;
 
+import com.mt.common.CommonConstant;
 import com.mt.common.infrastructure.audit.SpringDataJpaConfig;
 import com.mt.common.domain.model.audit.Auditable;
 import com.mt.common.domain.model.restful.PatchCommand;
@@ -56,6 +57,8 @@ public abstract class UpdateQueryBuilder<T extends Auditable> {
             if (and != null)
                 criteriaUpdate.where(and);
             setUpdateValue(root, criteriaUpdate, key);
+            //update version, this is required to make optimistic lock work properly
+            criteriaUpdate.set(root.<Integer>get(CommonConstant.VERSION), cb.sum(root.get(CommonConstant.VERSION), 1));
             //manually set updateAt updateBy bcz criteria api bypass hibernate session
             Optional<String> currentAuditor = SpringDataJpaConfig.AuditorAwareImpl.getAuditor();
             criteriaUpdate.set(ENTITY_MODIFIED_BY, currentAuditor.orElse(""));

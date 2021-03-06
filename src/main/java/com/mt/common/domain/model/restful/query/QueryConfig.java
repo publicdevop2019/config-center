@@ -15,7 +15,7 @@ public class QueryConfig {
         value = null;
     }
 
-    public static QueryConfig skip() {
+    public static QueryConfig skipCount() {
 
         return new QueryConfig("sc:1");
     }

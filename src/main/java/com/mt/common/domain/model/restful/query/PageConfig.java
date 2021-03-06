@@ -83,7 +83,9 @@ public class PageConfig {
     public PageConfig() {
         rawValue = getDefaultConfig();
     }
-
+    public static PageConfig defaultConfig(){
+        return new PageConfig();
+    }
     public PageConfig(Long pageNumber, Integer pageSize) {
         this.pageNumber = pageNumber;
         this.pageSize = pageSize;

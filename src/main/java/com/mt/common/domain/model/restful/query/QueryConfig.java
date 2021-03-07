@@ -20,6 +20,11 @@ public class QueryConfig {
         return new QueryConfig("sc:1");
     }
 
+    public static QueryConfig countRequired() {
+
+        return new QueryConfig();
+    }
+
     public boolean count() {
         return value == null || value.contains("sc:1");
     }

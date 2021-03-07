@@ -1,5 +1,6 @@
 package com.mt.common.domain.model.restful.query;
 
+import com.mt.common.CommonConstant;
 import com.mt.common.domain.model.audit.Auditable;
 import com.mt.common.domain.model.restful.SumPagedRep;
 import com.mt.common.domain.model.sql.builder.SqlSelectQueryConverter;
@@ -21,8 +22,12 @@ import java.util.function.Function;
 
 @Component
 public class QueryUtility {
-    @Autowired
     private static EntityManager em;
+
+    @Autowired
+    public void setEntityManager(EntityManager em) {
+        QueryUtility.em = em;
+    }
 
     public static <T, S extends QueryCriteria> Set<T> getAllByQuery(BiFunction<S, PageConfig, SumPagedRep<T>> ofQuery, S query) {
         PageConfig queryPagingParam = new PageConfig();
@@ -118,7 +123,7 @@ public class QueryUtility {
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<T> query = criteriaBuilder.createQuery(clazz);
         Root<T> root = query.from(clazz);
-        return new QueryContext<>(criteriaBuilder, query, root, criteriaBuilder.createQuery(Long.class), clazz);
+        return new QueryContext<>(criteriaBuilder, query, root, criteriaBuilder.createQuery(Long.class), clazz, new ArrayList<>());
     }
 
     public static <T> Predicate getStringEqualPredicate(String value, String sqlFieldName, QueryContext<T> queryContext) {
@@ -144,8 +149,12 @@ public class QueryUtility {
         return order;
     }
 
-    public static <T> Predicate getStringInPredicate(Set<String> collect, String catalogIdLiteral, QueryContext<T> queryContext) {
-        return queryContext.getRoot().get(catalogIdLiteral).as(String.class).in(collect);
+    public static <T> Predicate getStringInPredicate(Set<String> collect, String fieldName, QueryContext<T> queryContext) {
+        return queryContext.getRoot().get(fieldName).as(String.class).in(collect);
+    }
+
+    public static <T> Predicate getDomainIdInPredicate(Set<String> collect, String catalogIdLiteral, QueryContext<T> queryContext) {
+        return queryContext.getRoot().get(catalogIdLiteral).get(CommonConstant.DOMAIN_ID).as(String.class).in(collect);
     }
 
     public static <T> Predicate getStringLikePredicate(String value, String sqlFieldName, QueryContext<T> queryContext) {
@@ -187,13 +196,15 @@ public class QueryUtility {
         private final CriteriaQuery<Long> countQuery;
         private final CriteriaQuery<T> query;
         private final Class<T> clazz;
+        private final List<Predicate> predicates;
 
-        public QueryContext(CriteriaBuilder cb, CriteriaQuery<T> query, Root<T> root, CriteriaQuery<Long> countQuery, Class<T> clazz) {
+        public QueryContext(CriteriaBuilder cb, CriteriaQuery<T> query, Root<T> root, CriteriaQuery<Long> countQuery, Class<T> clazz, List<Predicate> predicates) {
             this.criteriaBuilder = cb;
             this.root = root;
             this.countQuery = countQuery;
             this.query = query;
             this.clazz = clazz;
+            this.predicates = predicates;
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.mt.common.port.adapter.persistence;
 
-import com.mt.common.port.adapter.persistence.idempotent.ChangeRecordQueryBuilder;
+import com.mt.common.port.adapter.persistence.idempotent.SpringDataJpaChangeRecordRepository;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class CommonQueryBuilderRegistry {
     @Getter
-    private static ChangeRecordQueryBuilder changeRecordQueryBuilder;
+    private static SpringDataJpaChangeRecordRepository.JpaCriteriaApiChangeRecordAdaptor changeRecordQueryBuilder;
 
     @Autowired
-    public void setChangeRecordQueryBuilder(ChangeRecordQueryBuilder changeRecordQueryBuilder) {
+    public void setChangeRecordQueryBuilder(SpringDataJpaChangeRecordRepository.JpaCriteriaApiChangeRecordAdaptor changeRecordQueryBuilder) {
         CommonQueryBuilderRegistry.changeRecordQueryBuilder = changeRecordQueryBuilder;
     }
 

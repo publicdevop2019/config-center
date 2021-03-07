@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.Setter;
 
 public abstract class QueryCriteria {
-    @Setter(AccessLevel.PRIVATE)
+    @Setter(AccessLevel.PROTECTED)
     protected PageConfig pageConfig;
     @Setter(AccessLevel.PROTECTED)
     protected QueryConfig queryConfig;

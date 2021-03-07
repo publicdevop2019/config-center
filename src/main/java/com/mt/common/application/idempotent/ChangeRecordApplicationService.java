@@ -11,12 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ChangeRecordApplicationService {
-    public SumPagedRep<ChangeRecord> changeRecords(String s, String s1) {
-        return CommonDomainRegistry.getChangeRecordRepository().changeRecordsOfQuery(new ChangeRecordQuery(s), new PageConfig(), new QueryConfig(s1));
+    public SumPagedRep<ChangeRecord> changeRecords(String s) {
+        return CommonDomainRegistry.getChangeRecordRepository().changeRecordsOfQuery(new ChangeRecordQuery(s));
     }
 
     public SumPagedRep<ChangeRecord> changeRecords(String s, String s1, String s2) {
-        return CommonDomainRegistry.getChangeRecordRepository().changeRecordsOfQuery(new ChangeRecordQuery(s), new PageConfig(s1, 100), new QueryConfig(s2));
+        return CommonDomainRegistry.getChangeRecordRepository().changeRecordsOfQuery(new ChangeRecordQuery(s,s1,s2));
     }
     @Transactional
     public void create(CreateChangeRecordCommand changeRecord) {

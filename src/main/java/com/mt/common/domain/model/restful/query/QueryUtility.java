@@ -149,6 +149,16 @@ public class QueryUtility {
         return order;
     }
 
+    public static <T> Order getDomainIdOrder(String domainIdName, QueryContext<T> queryContext, boolean isAsc) {
+        Order order;
+        if (isAsc) {
+            order = queryContext.getCriteriaBuilder().asc(queryContext.getRoot().get(domainIdName).get(CommonConstant.DOMAIN_ID));
+        } else {
+            order = queryContext.getCriteriaBuilder().desc(queryContext.getRoot().get(domainIdName).get(CommonConstant.DOMAIN_ID));
+        }
+        return order;
+    }
+
     public static <T> Predicate getStringInPredicate(Set<String> collect, String fieldName, QueryContext<T> queryContext) {
         return queryContext.getRoot().get(fieldName).as(String.class).in(collect);
     }

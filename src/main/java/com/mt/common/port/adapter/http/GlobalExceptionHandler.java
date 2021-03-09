@@ -7,11 +7,11 @@ import com.mt.common.domain.model.jwt.IllegalJwtException;
 import com.mt.common.domain.model.jwt.JwtTokenExtractException;
 import com.mt.common.domain.model.jwt.JwtTokenRetrievalException;
 import com.mt.common.domain.model.logging.ErrorMessage;
-import com.mt.common.domain.model.restful.query.QueryCriteria;
 import com.mt.common.domain.model.restful.exception.AggregateNotExistException;
 import com.mt.common.domain.model.restful.exception.AggregateOutdatedException;
 import com.mt.common.domain.model.restful.exception.UnsupportedPatchOperationException;
 import com.mt.common.domain.model.restful.exception.UpdateFiledValueException;
+import com.mt.common.domain.model.restful.query.QueryUtility;
 import com.mt.common.domain.model.sql.builder.PredicateConfig;
 import com.mt.common.domain.model.sql.builder.UpdateQueryBuilder;
 import com.mt.common.domain.model.sql.exception.UnsupportedQueryException;
@@ -46,7 +46,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ChangeNotFoundException.class,
             AggregateOutdatedException.class,
             IllegalJwtException.class,
-            QueryCriteria.QueryParseException.class
+            QueryUtility.QueryParseException.class
     })
     protected ResponseEntity<Object> handle400Exception(RuntimeException ex, WebRequest request) {
         ErrorMessage errorMessage = new ErrorMessage(ex);

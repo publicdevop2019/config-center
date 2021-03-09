@@ -6,8 +6,8 @@ import com.mt.common.application.idempotent.ChangeRecordApplicationService;
 import com.mt.common.application.idempotent.CreateChangeRecordCommand;
 import com.mt.common.application.idempotent.exception.ChangeNotFoundException;
 import com.mt.common.domain.model.domainId.DomainId;
-import com.mt.common.domain.model.idempotent.event.HangingTxDetected;
 import com.mt.common.domain.model.domain_event.DomainEventPublisher;
+import com.mt.common.domain.model.idempotent.event.HangingTxDetected;
 import com.mt.common.domain.model.restful.SumPagedRep;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,10 +32,10 @@ public class IdempotentService {
     public <T> String idempotentCreate(Object command, String changeId, DomainId domainId, Supplier<DomainId> wrapper, Class<T> clazz) {
         String entityType = getEntityName(clazz);
         if (changeAlreadyExist(changeId, clazz) && changeAlreadyRevoked(changeId, clazz)) {
-            SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep = idempotentApplicationService().changeRecords(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + entityType, "sc:1");
+            SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep = idempotentApplicationService().changeRecords(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + entityType);
             return appChangeRecordCardRepSumPagedRep.getData().get(0).getQuery().replace(CommonConstant.COMMON_ENTITY_ID + CommonConstant.QUERY_DELIMITER, "");
         } else if (changeAlreadyExist(changeId, clazz) && !changeAlreadyRevoked(changeId, clazz)) {
-            SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep = idempotentApplicationService().changeRecords(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + entityType, "sc:1");
+            SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep = idempotentApplicationService().changeRecords(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + entityType);
             return appChangeRecordCardRepSumPagedRep.getData().get(0).getQuery().replace("id:", "");
         } else if (!changeAlreadyExist(changeId, clazz) && changeAlreadyRevoked(changeId, clazz)) {
             //hanging tx
@@ -50,10 +50,10 @@ public class IdempotentService {
     public <T> Set<String> idempotentDeleteByQuery(String query, String changeId, Function<CreateChangeRecordCommand, Set<DomainId>> wrapper, Class<T> clazz) {
         String entityType = getEntityName(clazz);
         if (changeAlreadyExist(changeId, clazz) && changeAlreadyRevoked(changeId, clazz)) {
-            SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep = idempotentApplicationService().changeRecords(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + entityType, "sc:1");
+            SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep = idempotentApplicationService().changeRecords(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + entityType);
             return appChangeRecordCardRepSumPagedRep.getData().get(0).getDeletedIds();
         } else if (changeAlreadyExist(changeId, clazz) && !changeAlreadyRevoked(changeId, clazz)) {
-            SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep = idempotentApplicationService().changeRecords(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + entityType, "sc:1");
+            SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep = idempotentApplicationService().changeRecords(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + entityType);
             return appChangeRecordCardRepSumPagedRep.getData().get(0).getDeletedIds();
         } else if (!changeAlreadyExist(changeId, clazz) && changeAlreadyRevoked(changeId, clazz)) {
             return Collections.emptySet();
@@ -73,7 +73,7 @@ public class IdempotentService {
     public <T> void idempotentRollback(String changeId, Consumer<ChangeRecord> wrapper, Class<T> clazz) {
         if (changeAlreadyExist(changeId, clazz) && !changeAlreadyRevoked(changeId, clazz)) {
             String entityType = getEntityName(clazz);
-            SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep1 = idempotentApplicationService().changeRecords(ChangeRecord.CHANGE_ID + ":" + changeId + "," + ChangeRecord.ENTITY_TYPE + ":" + entityType, "sc:1");
+            SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep1 = idempotentApplicationService().changeRecords(ChangeRecord.CHANGE_ID + ":" + changeId + "," + ChangeRecord.ENTITY_TYPE + ":" + entityType);
             List<ChangeRecord> data = appChangeRecordCardRepSumPagedRep1.getData();
             if (data == null || data.size() == 0) {
                 throw new ChangeNotFoundException();
@@ -86,13 +86,13 @@ public class IdempotentService {
 
     protected <T> boolean changeAlreadyRevoked(String changeId, Class<T> clazz) {
         String entityType = getEntityName(clazz);
-        SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep = idempotentApplicationService().changeRecords(CHANGE_ID + ":" + changeId + CHANGE_REVOKED + "," + ENTITY_TYPE + ":" + entityType, "sc:1");
+        SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep = idempotentApplicationService().changeRecords(CHANGE_ID + ":" + changeId + CHANGE_REVOKED + "," + ENTITY_TYPE + ":" + entityType);
         return (appChangeRecordCardRepSumPagedRep.getData() != null && appChangeRecordCardRepSumPagedRep.getData().size() > 0);
     }
 
     protected <T> boolean changeAlreadyExist(String changeId, Class<T> clazz) {
         String entityType = getEntityName(clazz);
-        SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep = idempotentApplicationService().changeRecords(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + entityType, "sc:1");
+        SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep = idempotentApplicationService().changeRecords(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + entityType);
         return (appChangeRecordCardRepSumPagedRep.getData() != null && appChangeRecordCardRepSumPagedRep.getData().size() > 0);
     }
 

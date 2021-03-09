@@ -1,43 +1,25 @@
 package com.mt.common.domain.model.restful.query;
 
-import com.mt.common.CommonConstant;
-import com.mt.common.domain.model.domainId.DomainId;
-import lombok.Getter;
+import lombok.AccessLevel;
+import lombok.Setter;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+public abstract class QueryCriteria {
+    @Setter(AccessLevel.PROTECTED)
+    protected PageConfig pageConfig;
+    @Setter(AccessLevel.PROTECTED)
+    protected QueryConfig queryConfig;
 
-@Getter
-public class QueryCriteria {
-    protected final String rawValue;
-    protected final Map<String, String> parsed = new HashMap<>();
-
-    public QueryCriteria(String queryParam) {
-        this.rawValue = queryParam;
-        if (queryParam != null) {
-            String[] split = queryParam.split(",");
-            for (String str : split) {
-                String[] split1 = str.split(":");
-                if (split1.length != 2)
-                    throw new QueryParseException();
-                parsed.put(split1[0], split1[1]);
-            }
-        }
+    public QueryCriteria pageOf(int a) {
+        PageConfig pageConfig = this.pageConfig.pageOf(((Integer) a).longValue());
+        setPageConfig(pageConfig);
+        return this;
     }
 
-    public boolean isGetAll() {
-        return parsed.isEmpty();
+    boolean count() {
+        return queryConfig.count();
     }
 
-    public QueryCriteria(DomainId domainId) {
-        this(CommonConstant.COMMON_ENTITY_ID + CommonConstant.QUERY_DELIMITER + domainId.getDomainId());
-    }
-
-    public QueryCriteria(Set<String> domainIds) {
-        this(CommonConstant.COMMON_ENTITY_ID + CommonConstant.QUERY_DELIMITER + String.join(CommonConstant.QUERY_OR_DELIMITER, domainIds));
-    }
-
-    public static class QueryParseException extends RuntimeException {
+    public PageConfig getPageConfig() {
+        return this.pageConfig;
     }
 }

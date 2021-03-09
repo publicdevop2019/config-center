@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class SelectQueryBuilder<T extends Auditable> extends PredicateConfig<T> {
+public abstract class SqlSelectQueryConverter<T extends Auditable> extends PredicateConfig<T> {
     @Autowired
     protected EntityManager em;
     protected OrderClause<T> sortConverter;

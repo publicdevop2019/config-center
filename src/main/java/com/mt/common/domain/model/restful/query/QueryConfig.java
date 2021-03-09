@@ -11,13 +11,18 @@ public class QueryConfig {
         value = configParam;
     }
 
-    public QueryConfig() {
+    private QueryConfig() {
         value = null;
     }
 
-    public static QueryConfig skip() {
+    public static QueryConfig skipCount() {
 
         return new QueryConfig("sc:1");
+    }
+
+    public static QueryConfig countRequired() {
+
+        return new QueryConfig();
     }
 
     public boolean count() {

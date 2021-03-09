@@ -5,6 +5,7 @@ import lombok.Data;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -24,5 +25,11 @@ public class SumPagedRep<T> implements Serializable {
     }
 
     public SumPagedRep() {
+    }
+
+    public Optional<T> findFirst() {
+        if (data.isEmpty())
+            return Optional.empty();
+        return Optional.of(data.get(0));
     }
 }

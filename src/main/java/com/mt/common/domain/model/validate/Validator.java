@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 
 public class Validator {
     private static final String NOT_NULL_MSG = "condition not match notNull";
-    private static final String NOT_NULL_SET_MSG = "condition not match Set notNull";
     private static final String NOT_EMPTY_MSG = "condition not match notEmpty";
     private static final String NO_NULL_MEMBER_MSG = "condition not match noNullMember";
     private static final String NUM_GREATER_OR_EQUAL_TO_MSG = "condition not match greaterThanOrEqualTo";
@@ -37,24 +36,14 @@ public class Validator {
         notBlank(text, null);
     }
 
-    public static void notNull(@Nullable String text, @Nullable String message) {
+    public static void notNull(@Nullable Object text, @Nullable String message) {
         if (text == null) {
             throw new IllegalArgumentException(message == null ? NOT_NULL_MSG : message);
         }
     }
 
-    public static void notNull(@Nullable String text) {
-        notNull(text, null);
-    }
-
-    public static void notNull(@Nullable Collection<?> objects, @Nullable String message) {
-        if (objects == null) {
-            throw new IllegalArgumentException(message == null ? NOT_NULL_SET_MSG : message);
-        }
-    }
-
-    public static void notNull(@Nullable Collection<?> text) {
-        notNull(text, null);
+    public static void notNull(@Nullable Object value) {
+        notNull(value, null);
     }
 
     public static void lengthGreaterThanOrEqualTo(@Nullable String text, Integer min, @Nullable String message) {

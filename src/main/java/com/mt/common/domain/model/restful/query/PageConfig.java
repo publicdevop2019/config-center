@@ -2,6 +2,8 @@ package com.mt.common.domain.model.restful.query;
 
 import lombok.Getter;
 
+import javax.annotation.Nullable;
+
 import static com.mt.common.CommonConstant.COMMON_ENTITY_ID;
 
 @Getter
@@ -30,7 +32,7 @@ public class PageConfig {
         return pageNumber * (long) pageSize;
     }
 
-    private PageConfig(String configStr) {
+    private PageConfig(@Nullable String configStr) {
         if (configStr == null) {
             rawValue = getDefaultConfig();
         } else {
@@ -72,7 +74,7 @@ public class PageConfig {
     private String getDefaultConfig() {
         return PAGING_NUM + ":" + pageNumber + "," + PAGING_SIZE + ":" + pageSize + "," + SORT_BY + ":" + sortBy + "," + SORT_ORDER + ":" + SortOrder.asc.name();
     }
-
+    @Deprecated
     public PageConfig(String pagingParamStr, Integer maxPageSize) {
         this(pagingParamStr);
         if (pageSize > maxPageSize) {
@@ -80,8 +82,20 @@ public class PageConfig {
         }
     }
 
+    public static PageConfig limited(@Nullable String pagingParamStr, Integer maxPageSize) {
+        PageConfig pageConfig = new PageConfig(pagingParamStr);
+        if (pageConfig.getPageSize() > maxPageSize) {
+            throw new PagingParseException();
+        }
+        return pageConfig;
+    }
+
     public PageConfig() {
         rawValue = getDefaultConfig();
+    }
+
+    public static PageConfig defaultConfig() {
+        return new PageConfig();
     }
 
     public PageConfig(Long pageNumber, Integer pageSize) {

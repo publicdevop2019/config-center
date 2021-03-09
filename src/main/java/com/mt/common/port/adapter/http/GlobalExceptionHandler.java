@@ -12,7 +12,6 @@ import com.mt.common.domain.model.restful.exception.AggregateOutdatedException;
 import com.mt.common.domain.model.restful.exception.UnsupportedPatchOperationException;
 import com.mt.common.domain.model.restful.exception.UpdateFiledValueException;
 import com.mt.common.domain.model.restful.query.QueryUtility;
-import com.mt.common.domain.model.sql.builder.PredicateConfig;
 import com.mt.common.domain.model.sql.builder.UpdateQueryBuilder;
 import com.mt.common.domain.model.sql.exception.UnsupportedQueryException;
 import com.mt.common.infrastructure.JacksonObjectSerializer;
@@ -42,7 +41,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             UpdateQueryBuilder.PatchCommandExpectNotMatchException.class,
             AggregateNotExistException.class,
             JacksonObjectSerializer.UnableToJsonPatchException.class,
-            PredicateConfig.UnknownWhereClauseException.class,
             ChangeNotFoundException.class,
             AggregateOutdatedException.class,
             IllegalJwtException.class,

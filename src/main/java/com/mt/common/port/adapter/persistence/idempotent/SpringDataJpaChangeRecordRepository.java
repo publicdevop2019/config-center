@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
 
 import static com.mt.common.domain.model.idempotent.ChangeRecord.CHANGE_ID;
 import static com.mt.common.domain.model.idempotent.ChangeRecord.ENTITY_TYPE;
@@ -28,15 +27,15 @@ public interface SpringDataJpaChangeRecordRepository extends ChangeRecordReposit
 
     @Component
     class JpaCriteriaApiChangeRecordAdaptor {
-        public SumPagedRep<ChangeRecord> execute(ChangeRecordQuery changeRecordQuery) {
-            QueryUtility.QueryContext<ChangeRecord> queryContext = QueryUtility.prepareContext(ChangeRecord.class);
-            Predicate predicate1 = QueryUtility.getStringEqualPredicate(changeRecordQuery.getChangeId(), CHANGE_ID, queryContext);
-            Predicate predicate2 = QueryUtility.getStringEqualPredicate(changeRecordQuery.getEntityType(), ENTITY_TYPE, queryContext);
-            Predicate predicate = QueryUtility.combinePredicate(queryContext, predicate1, predicate2);
+        public SumPagedRep<ChangeRecord> execute(ChangeRecordQuery query) {
+            QueryUtility.QueryContext<ChangeRecord> context = QueryUtility.prepareContext(ChangeRecord.class, query);
+            QueryUtility.addStringEqualPredicate(query.getChangeId(), CHANGE_ID, context);
+            QueryUtility.addStringEqualPredicate(query.getEntityType(), ENTITY_TYPE, context);
             Order order = null;
-            if (changeRecordQuery.getChangeRecordSort().isById())
-                order = QueryUtility.getOrder("changeId", queryContext, changeRecordQuery.getChangeRecordSort().isAsc());
-            return QueryUtility.pagedQuery(predicate, order, changeRecordQuery, queryContext);
+            if (query.getChangeRecordSort().isById())
+                order = QueryUtility.getOrder("changeId", context, query.getChangeRecordSort().isAsc());
+            context.setOrder(order);
+            return QueryUtility.pagedQuery(query, context);
         }
     }
 }

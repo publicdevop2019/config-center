@@ -11,7 +11,7 @@ public class QueryConfig {
         value = configParam;
     }
 
-    public QueryConfig() {
+    private QueryConfig() {
         value = null;
     }
 

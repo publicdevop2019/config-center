@@ -3,21 +3,18 @@ package com.mt.common.domain.model.restful.query;
 import com.mt.common.CommonConstant;
 import com.mt.common.domain.model.audit.Auditable;
 import com.mt.common.domain.model.restful.SumPagedRep;
-import com.mt.common.domain.model.sql.builder.SqlSelectQueryConverter;
 import com.mt.common.domain.model.sql.clause.NotDeletedClause;
 import com.mt.common.domain.model.sql.exception.UnsupportedQueryException;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @Component
@@ -27,21 +24,6 @@ public class QueryUtility {
     @Autowired
     public void setEntityManager(EntityManager em) {
         QueryUtility.em = em;
-    }
-
-    public static <T, S extends QueryCriteria> Set<T> getAllByQuery(BiFunction<S, PageConfig, SumPagedRep<T>> ofQuery, S query) {
-        PageConfig queryPagingParam = new PageConfig();
-        SumPagedRep<T> tSumPagedRep = ofQuery.apply(query, queryPagingParam);
-        if (tSumPagedRep.getData().size() == 0)
-            return new HashSet<>();
-        double l = (double) tSumPagedRep.getTotalItemCount() / tSumPagedRep.getData().size();//for accuracy
-        double ceil = Math.ceil(l);
-        int i = BigDecimal.valueOf(ceil).intValue();
-        Set<T> data = new HashSet<>(tSumPagedRep.getData());
-        for (int a = 1; a < i; a++) {
-            data.addAll(ofQuery.apply(query, queryPagingParam.pageOf(a)).getData());
-        }
-        return data;
     }
 
     public static <T> Set<T> getAllByQuery(Function<QueryCriteria, SumPagedRep<T>> ofQuery, QueryCriteria query) {
@@ -58,41 +40,31 @@ public class QueryUtility {
         return data;
     }
 
-    public static <T extends Auditable> SumPagedRep<T> pagedQuery(SqlSelectQueryConverter<T> queryBuilder, QueryCriteria query, PageConfig page, QueryConfig config, Class<T> clazz) {
-        List<T> select = queryBuilder.select(query, page, clazz);
-        Long aLong = null;
-        if (config.count()) {
-            aLong = queryBuilder.count(query, clazz);
-        }
-        return new SumPagedRep<>(select, aLong);
-    }
+    public static <T extends Auditable> SumPagedRep<T> pagedQuery(QueryCriteria queryCriteria, QueryContext<T> context) {
+        //add soft delete
+        context.getPredicates().add(new NotDeletedClause<T>().getWhereClause(context.getCriteriaBuilder(), context.getRoot(), context.getQuery()));
+        Optional.ofNullable(context.getCountPredicates()).ifPresent(e -> e.add(new NotDeletedClause<T>().getWhereClause(context.getCriteriaBuilder(), context.getCountRoot(), context.getQuery())));
 
-    public static <T extends Auditable> SumPagedRep<T> pagedQuery(Predicate predicate, Order order, QueryCriteria queryCriteria, QueryContext<T> context) {
-        return pagedQuery(predicate, null, order, queryCriteria, context);
-    }
-
-    public static <T extends Auditable> SumPagedRep<T> pagedQuery(Predicate predicate, @Nullable Predicate countPredicate, Order order, QueryCriteria queryCriteria, QueryContext<T> context) {
-        Predicate notSoftDeleted = new NotDeletedClause<T>().getWhereClause(context.getCriteriaBuilder(), context.getRoot(), context.getQuery());
-        Predicate extended = QueryUtility.combinePredicate(context, notSoftDeleted, predicate);
-        List<T> select = QueryUtility.select(extended, order, queryCriteria.getPageConfig(), context);
+        Predicate and = context.getCriteriaBuilder().and(context.getPredicates().toArray(new Predicate[0]));
+        List<T> select = QueryUtility.select(and, context.getOrder(), queryCriteria.getPageConfig(), context);
         Long aLong = null;
         if (queryCriteria.count()) {
-            aLong = QueryUtility.count(countPredicate == null ? predicate : countPredicate, context);
+            Predicate countPredicate = context.getCriteriaBuilder().and(context.getCountPredicates().toArray(new Predicate[0]));
+            aLong = QueryUtility.count(countPredicate, context);
         }
         return new SumPagedRep<>(select, aLong);
     }
 
     private static <T extends Auditable> Long count(Predicate predicate, QueryContext<T> context) {
         CriteriaQuery<Long> query = context.getCountQuery();
-        Root<T> root = query.from(context.clazz);
-        query.select(context.getCriteriaBuilder().count(root));
+        query.select(context.getCriteriaBuilder().count(context.getCountRoot()));
         query.where(predicate);
         TypedQuery<Long> query1 = em.createQuery(query);
         ((Query) query1).setHint("org.hibernate.cacheable", true);
         return query1.getSingleResult();
     }
 
-    private static <T extends Auditable> List<T> select(Predicate predicate, Order order, PageConfig page, QueryContext<T> context) {
+    private static <T extends Auditable> List<T> select(Predicate predicate, List<Order> order, PageConfig page, QueryContext<T> context) {
         CriteriaQuery<T> query = context.getQuery();
         Root<T> root = context.getRoot();
         query.select(root);
@@ -119,24 +91,39 @@ public class QueryUtility {
         return parsed;
     }
 
-    public static <T> QueryContext<T> prepareContext(Class<T> clazz) {
+    public static <T> QueryContext<T> prepareContext(Class<T> clazz, QueryCriteria queryCriteria) {
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<T> query = criteriaBuilder.createQuery(clazz);
         Root<T> root = query.from(clazz);
-        return new QueryContext<>(criteriaBuilder, query, root, criteriaBuilder.createQuery(Long.class), clazz, new ArrayList<>());
+        Root<T> countRoot = null;
+        CriteriaQuery<Long> countQuery = null;
+        List<Predicate> countPredicate = null;
+        if (queryCriteria.count()) {
+            countQuery = criteriaBuilder.createQuery(Long.class);
+            countRoot = countQuery.from(clazz);
+            countPredicate = new ArrayList<>();
+        }
+        return new QueryContext<>(criteriaBuilder, query, root, countQuery, countRoot, clazz, new ArrayList<>(), countPredicate);
     }
 
-    public static <T> Predicate getStringEqualPredicate(String value, String sqlFieldName, QueryContext<T> queryContext) {
-        return queryContext.getCriteriaBuilder().equal(queryContext.getRoot().get(sqlFieldName).as(String.class), value);
+    public static <T> void addStringEqualPredicate(String value, String sqlFieldName, QueryContext<T> context) {
+        context.getPredicates().add(context.getCriteriaBuilder().equal(context.getRoot().get(sqlFieldName).as(String.class), value));
+        Optional.ofNullable(context.getCountPredicates()).ifPresent(e -> e.add(context.getCriteriaBuilder().equal(context.getCountRoot().get(sqlFieldName).as(String.class), value)));
     }
 
-    public static <T> Predicate combinePredicate(QueryContext<T> queryContext, Predicate... stringEqualPredicate) {
-        List<Predicate> results = List.of(stringEqualPredicate);
-        return queryContext.getCriteriaBuilder().and(results.toArray(new Predicate[0]));
-    }
-
-    public static <T> Predicate combinePredicate(QueryContext<T> queryContext, List<Predicate> predicates) {
-        return queryContext.getCriteriaBuilder().and(predicates.toArray(new Predicate[0]));
+    public static <T> void addBooleanEqualPredicate(boolean value, String sqlFieldName, QueryContext<T> queryContext) {
+        if (value) {
+            queryContext.getPredicates().add(queryContext.getCriteriaBuilder().isTrue(queryContext.getRoot().get(sqlFieldName)));
+        } else {
+            queryContext.getPredicates().add(queryContext.getCriteriaBuilder().isFalse(queryContext.getRoot().get(sqlFieldName)));
+        }
+        Optional.ofNullable(queryContext.getCountPredicates()).ifPresent(e -> {
+            if (value) {
+                e.add(queryContext.getCriteriaBuilder().isTrue(queryContext.getCountRoot().get(sqlFieldName)));
+            } else {
+                e.add(queryContext.getCriteriaBuilder().isFalse(queryContext.getCountRoot().get(sqlFieldName)));
+            }
+        });
     }
 
     public static <T> Order getOrder(String fieldName, QueryContext<T> queryContext, boolean isAsc) {
@@ -159,21 +146,32 @@ public class QueryUtility {
         return order;
     }
 
-    public static <T> Predicate getStringInPredicate(Set<String> collect, String fieldName, QueryContext<T> queryContext) {
-        return queryContext.getRoot().get(fieldName).as(String.class).in(collect);
+    public static <T> void addStringInPredicate(Set<String> collect, String fieldName, QueryContext<T> queryContext) {
+        queryContext.getPredicates().add(queryContext.getRoot().get(fieldName).as(String.class).in(collect));
+        Optional.ofNullable(queryContext.getCountPredicates()).ifPresent(e -> e.add(queryContext.getCountRoot().get(fieldName).as(String.class).in(collect)));
     }
 
-    public static <T> Predicate getDomainIdInPredicate(Set<String> collect, String catalogIdLiteral, QueryContext<T> queryContext) {
-        return queryContext.getRoot().get(catalogIdLiteral).get(CommonConstant.DOMAIN_ID).as(String.class).in(collect);
+    public static <T> void addDomainIdInPredicate(Set<String> collect, String catalogIdLiteral, QueryContext<T> queryContext) {
+        queryContext.getPredicates().add(queryContext.getRoot().get(catalogIdLiteral).get(CommonConstant.DOMAIN_ID).as(String.class).in(collect));
+        Optional.ofNullable(queryContext.getCountPredicates()).ifPresent(e -> e.add(queryContext.getCountRoot().get(catalogIdLiteral).get(CommonConstant.DOMAIN_ID).as(String.class).in(collect)));
     }
 
-    public static <T> Predicate getStringLikePredicate(String value, String sqlFieldName, QueryContext<T> queryContext) {
-        return queryContext.getCriteriaBuilder().like(queryContext.getRoot().get(sqlFieldName).as(String.class), value);
+    public static <T> void addStringLikePredicate(String value, String sqlFieldName, QueryContext<T> queryContext) {
+        queryContext.getPredicates().add(queryContext.getCriteriaBuilder().like(queryContext.getRoot().get(sqlFieldName).as(String.class), value));
+        Optional.ofNullable(queryContext.getCountPredicates()).ifPresent(e -> e.add(queryContext.getCriteriaBuilder().like(queryContext.getCountRoot().get(sqlFieldName).as(String.class), value)));
     }
 
-    public static <T> Predicate getNumberRagePredicate(String query, String entityFieldName, QueryContext<T> queryContext) {
-        CriteriaBuilder cb = queryContext.getCriteriaBuilder();
-        Root<T> root = queryContext.getRoot();
+    public static <T> void addNumberRagePredicate(String query, String entityFieldName, QueryContext<T> queryContext) {
+        Predicate numPredicate = QueryUtility.getNumPredicate(query, queryContext.getCriteriaBuilder(), queryContext.getRoot(), entityFieldName);
+        queryContext.getPredicates().add(numPredicate);
+        Optional.ofNullable(queryContext.getCountPredicates()).ifPresent(e -> {
+            Root<T> countRoot = queryContext.getCountRoot();
+            Predicate numPredicate1 = QueryUtility.getNumPredicate(query, queryContext.getCriteriaBuilder(), countRoot, entityFieldName);
+            e.add(numPredicate1);
+        });
+    }
+
+    private static <T> Predicate getNumPredicate(String query, CriteriaBuilder cb, Root<T> root, String entityFieldName) {
         String[] split = query.split("\\$");
         List<Predicate> results = new ArrayList<>();
         for (String str : split) {
@@ -203,18 +201,31 @@ public class QueryUtility {
     public static class QueryContext<T> {
         private final CriteriaBuilder criteriaBuilder;
         private final Root<T> root;
+        private final Root<T> countRoot;
         private final CriteriaQuery<Long> countQuery;
         private final CriteriaQuery<T> query;
         private final Class<T> clazz;
         private final List<Predicate> predicates;
+        private final List<Predicate> countPredicates;
+        private List<Order> order;
 
-        public QueryContext(CriteriaBuilder cb, CriteriaQuery<T> query, Root<T> root, CriteriaQuery<Long> countQuery, Class<T> clazz, List<Predicate> predicates) {
+        public void setOrder(Order order) {
+            this.order = List.of(order);
+        }
+
+        public void setOrder(List<Order> order) {
+            this.order = order;
+        }
+
+        public QueryContext(CriteriaBuilder cb, CriteriaQuery<T> query, Root<T> root, CriteriaQuery<Long> countQuery, Root<T> countRoot, Class<T> clazz, List<Predicate> predicates, List<Predicate> countPredicates) {
             this.criteriaBuilder = cb;
             this.root = root;
             this.countQuery = countQuery;
             this.query = query;
             this.clazz = clazz;
             this.predicates = predicates;
+            this.countRoot = countRoot;
+            this.countPredicates = countPredicates;
         }
     }
 }

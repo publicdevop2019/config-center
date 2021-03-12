@@ -40,10 +40,10 @@ public class QueryUtility {
         return data;
     }
 
-    public static <T extends Auditable> SumPagedRep<T> pagedQuery(QueryCriteria queryCriteria, QueryContext<T> context) {
+    public static <T> SumPagedRep<T> pagedQuery(QueryCriteria queryCriteria, QueryContext<T> context) {
         //add soft delete
-        context.getPredicates().add(new NotDeletedClause<T>().getWhereClause(context.getCriteriaBuilder(), context.getRoot(), context.getQuery()));
-        Optional.ofNullable(context.getCountPredicates()).ifPresent(e -> e.add(new NotDeletedClause<T>().getWhereClause(context.getCriteriaBuilder(), context.getCountRoot(), context.getQuery())));
+        context.getPredicates().add(new NotDeletedClause<T>().getWhereClause(context.getCriteriaBuilder(), context.getRoot()));
+        Optional.ofNullable(context.getCountPredicates()).ifPresent(e -> e.add(new NotDeletedClause<T>().getWhereClause(context.getCriteriaBuilder(), context.getCountRoot())));
 
         Predicate and = context.getCriteriaBuilder().and(context.getPredicates().toArray(new Predicate[0]));
         List<T> select = QueryUtility.select(and, context.getOrder(), queryCriteria.getPageConfig(), context);
@@ -55,7 +55,7 @@ public class QueryUtility {
         return new SumPagedRep<>(select, aLong);
     }
 
-    private static <T extends Auditable> Long count(Predicate predicate, QueryContext<T> context) {
+    private static <T> Long count(Predicate predicate, QueryContext<T> context) {
         CriteriaQuery<Long> query = context.getCountQuery();
         query.select(context.getCriteriaBuilder().count(context.getCountRoot()));
         query.where(predicate);
@@ -64,7 +64,7 @@ public class QueryUtility {
         return query1.getSingleResult();
     }
 
-    private static <T extends Auditable> List<T> select(Predicate predicate, List<Order> order, PageConfig page, QueryContext<T> context) {
+    private static <T> List<T> select(Predicate predicate, List<Order> order, PageConfig page, QueryContext<T> context) {
         CriteriaQuery<T> query = context.getQuery();
         Root<T> root = context.getRoot();
         query.select(root);
@@ -151,9 +151,9 @@ public class QueryUtility {
         Optional.ofNullable(queryContext.getCountPredicates()).ifPresent(e -> e.add(queryContext.getCountRoot().get(fieldName).as(String.class).in(collect)));
     }
 
-    public static <T> void addDomainIdInPredicate(Set<String> collect, String catalogIdLiteral, QueryContext<T> queryContext) {
-        queryContext.getPredicates().add(queryContext.getRoot().get(catalogIdLiteral).get(CommonConstant.DOMAIN_ID).as(String.class).in(collect));
-        Optional.ofNullable(queryContext.getCountPredicates()).ifPresent(e -> e.add(queryContext.getCountRoot().get(catalogIdLiteral).get(CommonConstant.DOMAIN_ID).as(String.class).in(collect)));
+    public static <T> void addDomainIdInPredicate(Set<String> collect, String fieldName, QueryContext<T> queryContext) {
+        queryContext.getPredicates().add(queryContext.getRoot().get(fieldName).get(CommonConstant.DOMAIN_ID).as(String.class).in(collect));
+        Optional.ofNullable(queryContext.getCountPredicates()).ifPresent(e -> e.add(queryContext.getCountRoot().get(fieldName).get(CommonConstant.DOMAIN_ID).as(String.class).in(collect)));
     }
 
     public static <T> void addStringLikePredicate(String value, String sqlFieldName, QueryContext<T> queryContext) {

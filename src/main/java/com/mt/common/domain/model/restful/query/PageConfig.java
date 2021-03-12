@@ -90,7 +90,7 @@ public class PageConfig {
         return pageConfig;
     }
 
-    public PageConfig() {
+    private PageConfig() {
         rawValue = getDefaultConfig();
     }
 

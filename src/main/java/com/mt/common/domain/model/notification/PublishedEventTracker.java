@@ -18,5 +18,5 @@ public class PublishedEventTracker {
     private int version;
     @Setter
     @Getter
-    private long lastPublishedEventId;
+    private long lastPublishedId;
 }

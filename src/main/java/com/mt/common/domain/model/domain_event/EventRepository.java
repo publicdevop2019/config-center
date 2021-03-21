@@ -1,18 +1,11 @@
 package com.mt.common.domain.model.domain_event;
 
-import org.springframework.data.repository.CrudRepository;
-
 import java.util.List;
 
-public interface EventRepository extends CrudRepository<StoredEvent, Long> {
-    List<StoredEvent> findByIdGreaterThan(long id);
+public interface EventRepository {
 
-    default List<StoredEvent> allStoredEventsSince(long aStoredEventId) {
-        return findByIdGreaterThan(aStoredEventId);
-    }
+    List<StoredEvent> allStoredEventsSince(long lastId);
 
-    default void append(DomainEvent aDomainEvent) {
-        save(new StoredEvent(aDomainEvent));
-    }
+    void append(DomainEvent aDomainEvent);
 
 }

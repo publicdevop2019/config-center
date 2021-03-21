@@ -4,10 +4,7 @@ import com.mt.common.domain.CommonDomainRegistry;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
@@ -18,6 +15,8 @@ public class StoredEvent implements Serializable {
     @Lob
     private String eventBody;
     @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    //db generated id will make sure event get read in order and will not get skipped
     private Long id;
     private Long timestamp;
     private String name;
@@ -25,7 +24,6 @@ public class StoredEvent implements Serializable {
     private String topic;
 
     public StoredEvent(DomainEvent aDomainEvent) {
-        this.id = aDomainEvent.getId();
         this.eventBody = CommonDomainRegistry.getCustomObjectSerializer().serialize(aDomainEvent);
         this.timestamp = aDomainEvent.getTimestamp();
         this.name = aDomainEvent.getClass().getName();

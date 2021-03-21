@@ -36,7 +36,7 @@ public interface HibernatePublishedEventTrackerRepository extends PublishedEvent
         int lastIndex = events.size() - 1;
         if (lastIndex >= 0) {
             long mostRecentId = events.get(lastIndex).getId();
-            tracker.setLastPublishedEventId(mostRecentId);
+            tracker.setLastPublishedId(mostRecentId);
             save(tracker);
         }
     }

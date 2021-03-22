@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 import com.mt.common.domain.model.serializer.CustomObjectSerializer;
@@ -11,22 +12,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.util.Collection;
 import java.util.List;
 
 @Slf4j
 @Service
 public class JacksonObjectSerializer implements CustomObjectSerializer {
     private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    @Override
-    public <T> String serialize(T object) {
-        try {
-            return objectMapper.writeValueAsString(object);
-        } catch (JsonProcessingException e) {
-            log.error("error during object mapper serialize", e);
-            throw new UnableToSerializeException();
-        }
-    }
 
     @Override
     public byte[] nativeSerialize(Object object) {
@@ -42,8 +34,14 @@ public class JacksonObjectSerializer implements CustomObjectSerializer {
     }
 
     @Override
-    public <T> T deepCopy(T object, Class<T> clazz) {
-        return deserialize(serialize(object), clazz);
+    public Object nativeDeserialize(byte[] bytes) {
+        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+        try (ObjectInput in = new ObjectInputStream(bis)) {
+            return in.readObject();
+        } catch (ClassNotFoundException | IOException e) {
+            log.error("error during native deserialize", e);
+            throw new UnableToNativeDeserializeException();
+        }
     }
 
     @Override
@@ -52,13 +50,12 @@ public class JacksonObjectSerializer implements CustomObjectSerializer {
     }
 
     @Override
-    public <T> List<T> deepCopy(List<T> object) {
+    public <T> String serialize(T object) {
         try {
-            return objectMapper.readValue(objectMapper.writeValueAsString(object), new TypeReference<List<T>>() {
-            });
-        } catch (IOException e) {
-            log.error("error during object mapper list deep copy", e);
-            throw new UnableToDeepCopyListException();
+            return objectMapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            log.error("error during object mapper serialize", e);
+            throw new UnableToSerializeException();
         }
     }
 
@@ -73,15 +70,43 @@ public class JacksonObjectSerializer implements CustomObjectSerializer {
     }
 
     @Override
-    public Object nativeDeserialize(byte[] bytes) {
-        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-        try (ObjectInput in = new ObjectInputStream(bis)) {
-            return in.readObject();
-        } catch (ClassNotFoundException | IOException e) {
-            log.error("error during native deserialize", e);
-            throw new UnableToNativeDeserializeException();
+    public <T> T deepCopy(T object, Class<T> clazz) {
+        return deserialize(serialize(object), clazz);
+    }
+
+    @Override
+    public <T> String serializeCollection(Collection<T> object) {
+        try {
+            return objectMapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            log.error("error during object mapper collection serialize", e);
+            throw new UnableToSerializeCollectionException();
         }
     }
+
+    @Override
+    public <T> Collection<T> deserializeCollection(String str, Class<T> clazz) {
+        CollectionType javaType = objectMapper.getTypeFactory()
+                .constructCollectionType(List.class, clazz);
+        try {
+            return objectMapper.readValue(str, javaType);
+        } catch (IOException e) {
+            log.error("error during object mapper collection deserialize", e);
+            throw new UnableToDeserializeCollectionException();
+        }
+    }
+
+    @Override
+    public <T> Collection<T> deepCopyCollection(Collection<T> object) {
+        try {
+            return objectMapper.readValue(objectMapper.writeValueAsString(object), new TypeReference<Collection<T>>() {
+            });
+        } catch (IOException e) {
+            log.error("error during object mapper list deep copy", e);
+            throw new UnableToDeepCopyCollectionException();
+        }
+    }
+
 
     @Override
     public <T> T applyJsonPatch(JsonPatch command, T beforePatch, Class<T> clazz) {
@@ -104,7 +129,13 @@ public class JacksonObjectSerializer implements CustomObjectSerializer {
     public static class UnableToJsonPatchException extends RuntimeException {
     }
 
-    public static class UnableToDeepCopyListException extends RuntimeException {
+    public static class UnableToDeepCopyCollectionException extends RuntimeException {
+    }
+
+    public static class UnableToSerializeCollectionException extends RuntimeException {
+    }
+
+    public static class UnableToDeserializeCollectionException extends RuntimeException {
     }
 
     public static class UnableToNativeSerializeException extends RuntimeException {

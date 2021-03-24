@@ -1,7 +1,6 @@
 package com.mt.common.domain.model.restful.query;
 
 import com.mt.common.CommonConstant;
-import com.mt.common.domain.model.audit.Auditable;
 import com.mt.common.domain.model.restful.SumPagedRep;
 import com.mt.common.domain.model.sql.clause.NotDeletedClause;
 import com.mt.common.domain.model.sql.exception.UnsupportedQueryException;
@@ -157,8 +156,8 @@ public class QueryUtility {
     }
 
     public static <T> void addStringLikePredicate(String value, String sqlFieldName, QueryContext<T> queryContext) {
-        queryContext.getPredicates().add(queryContext.getCriteriaBuilder().like(queryContext.getRoot().get(sqlFieldName).as(String.class), value));
-        Optional.ofNullable(queryContext.getCountPredicates()).ifPresent(e -> e.add(queryContext.getCriteriaBuilder().like(queryContext.getCountRoot().get(sqlFieldName).as(String.class), value)));
+        queryContext.getPredicates().add(queryContext.getCriteriaBuilder().like(queryContext.getRoot().get(sqlFieldName).as(String.class), "%" + value.trim() + "%"));
+        Optional.ofNullable(queryContext.getCountPredicates()).ifPresent(e -> e.add(queryContext.getCriteriaBuilder().like(queryContext.getCountRoot().get(sqlFieldName).as(String.class), "%" + value.trim() + "%")));
     }
 
     public static <T> void addNumberRagePredicate(String query, String entityFieldName, QueryContext<T> queryContext) {

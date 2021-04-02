@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mt.common.CommonConstant;
-import com.mt.common.domain.model.service_discovery.EurekaUtility;
+import com.mt.common.domain.model.service_discovery.EurekaHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +31,7 @@ public class ResourceServiceTokenHelper {
     private String clientSecret;
 
     @Autowired
-    private EurekaUtility eurekaRegistryHelper;
+    private EurekaHelper eurekaRegistryHelper;
 
     @Autowired
     private RestTemplate restTemplate;

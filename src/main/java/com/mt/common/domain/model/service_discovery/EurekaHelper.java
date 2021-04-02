@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class EurekaUtility {
+public class EurekaHelper {
     @Autowired
     private EurekaClient discoveryClient;
 

@@ -1,8 +1,7 @@
 package com.mt.common.domain.model.domain_event;
 
 import com.mt.common.domain.CommonDomainRegistry;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -11,11 +10,13 @@ import java.io.Serializable;
 @Table
 @Getter
 @NoArgsConstructor
+@Data
+@Setter(AccessLevel.PRIVATE)
 public class StoredEvent implements Serializable {
     @Lob
     private String eventBody;
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     //db generated id will make sure event get read in order and will not get skipped
     private Long id;
     private Long timestamp;

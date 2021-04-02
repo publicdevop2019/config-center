@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -89,7 +90,10 @@ public class JacksonObjectSerializer implements CustomObjectSerializer {
         CollectionType javaType = objectMapper.getTypeFactory()
                 .constructCollectionType(List.class, clazz);
         try {
-            return objectMapper.readValue(str, javaType);
+            Collection<T> o = objectMapper.readValue(str, javaType);
+            if (o == null)
+                return Collections.emptyList();
+            return o;
         } catch (IOException e) {
             log.error("error during object mapper collection deserialize", e);
             throw new UnableToDeserializeCollectionException();

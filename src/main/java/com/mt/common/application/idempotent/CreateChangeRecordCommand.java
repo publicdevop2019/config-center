@@ -18,6 +18,7 @@ public class CreateChangeRecordCommand {
     private Object replacedVersion;
     private Object requestBody;
     private Set<String> deletedIds;
+    private boolean rollbackChangeNotFound = false;
 
     public void setQuery(DomainId domainId) {
         setQuery(CommonConstant.COMMON_ENTITY_ID + CommonConstant.QUERY_DELIMITER + domainId.getDomainId());

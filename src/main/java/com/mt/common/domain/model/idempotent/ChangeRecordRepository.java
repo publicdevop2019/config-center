@@ -6,4 +6,6 @@ public interface ChangeRecordRepository {
     SumPagedRep<ChangeRecord> changeRecordsOfQuery(ChangeRecordQuery changeRecordQuery);
 
     void add(ChangeRecord changeRecord);
+
+    void addIfChangeNotFound(ChangeRecord changeRecord1);
 }

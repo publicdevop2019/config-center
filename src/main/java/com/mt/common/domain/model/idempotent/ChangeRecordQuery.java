@@ -33,7 +33,6 @@ public class ChangeRecordQuery extends QueryCriteria {
         Map<String, String> stringStringMap = QueryUtility.parseQuery(queryParam);
         entityType = stringStringMap.get("entityType");
         changeId = stringStringMap.get("changeId");
-        Validator.notNull(entityType);
     }
 
     @Getter

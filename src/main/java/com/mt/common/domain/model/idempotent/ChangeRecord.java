@@ -2,8 +2,8 @@ package com.mt.common.domain.model.idempotent;
 
 import com.fasterxml.jackson.databind.JsonSerializable;
 import com.mt.common.application.idempotent.CreateChangeRecordCommand;
-import com.mt.common.domain.model.audit.Auditable;
 import com.mt.common.domain.CommonDomainRegistry;
+import com.mt.common.domain.model.audit.Auditable;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,7 +16,7 @@ import java.util.HashSet;
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"changeId", "entityType"}))
 @Data
 @NoArgsConstructor
-public class ChangeRecord extends Auditable{
+public class ChangeRecord extends Auditable {
     public static final String CHANGE_ID = "changeId";
     public static final String ENTITY_TYPE = "entityType";
     @Id
@@ -32,10 +32,10 @@ public class ChangeRecord extends Auditable{
     @Column(columnDefinition = "BLOB")
     //@Convert(converter = CustomByteArraySerializer.class)
     // not using converter due to lazy load , no session error
-    private byte[] replacedVersion;
+    private String replacedVersion;
     @Lob
     @Column(columnDefinition = "BLOB")
-    private byte[] requestBody;
+    private String requestBody;
     private HashSet<String> deletedIds;
     private OperationType operationType;
     private String query;
@@ -46,17 +46,17 @@ public class ChangeRecord extends Auditable{
         this.entityType = command.getEntityType();
         this.serviceBeanName = command.getServiceBeanName();
         if (command.getRequestBody() instanceof JsonSerializable) {
-            this.requestBody = CommonDomainRegistry.getCustomObjectSerializer().serialize(command.getRequestBody()).getBytes(StandardCharsets.UTF_8);
+            this.requestBody = CommonDomainRegistry.getCustomObjectSerializer().serialize(command.getRequestBody());
         } else {
             if (command.getRequestBody() instanceof MultipartFile) {
-                this.requestBody = "MultipartFile skipped".getBytes();
+                this.requestBody = "MultipartFile skipped";
             } else {
-                this.requestBody = CommonDomainRegistry.getCustomObjectSerializer().nativeSerialize(command.getRequestBody());
+                this.requestBody = CommonDomainRegistry.getCustomObjectSerializer().serialize(command.getRequestBody());
             }
         }
         this.operationType = command.getOperationType();
         this.query = command.getQuery();
-        this.replacedVersion = CommonDomainRegistry.getCustomObjectSerializer().nativeSerialize(command.getReplacedVersion());
+        this.replacedVersion = CommonDomainRegistry.getCustomObjectSerializer().serialize(command.getReplacedVersion());
         if (command.getDeletedIds() != null)
             this.deletedIds = new HashSet<>(command.getDeletedIds());
     }

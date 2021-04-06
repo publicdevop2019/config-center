@@ -35,7 +35,7 @@ public class ChangeRecordRepresentation {
         this.operationType = changeRecord.getOperationType();
         this.query = changeRecord.getQuery();
         this.deletedIds = changeRecord.getDeletedIds();
-        this.replacedVersion = CommonDomainRegistry.getCustomObjectSerializer().nativeDeserialize(changeRecord.getReplacedVersion());
+        this.replacedVersion = CommonDomainRegistry.getCustomObjectSerializer().deserialize(changeRecord.getReplacedVersion(), Object.class);
         if (changeRecord.getOperationType().equals(OperationType.PATCH_BY_ID)) {
             try {
                 this.requestBody = om.readValue(changeRecord.getRequestBody(), JsonPatch.class);
@@ -43,7 +43,7 @@ public class ChangeRecordRepresentation {
                 e.printStackTrace();
             }
         } else {
-            this.requestBody = CommonDomainRegistry.getCustomObjectSerializer().nativeSerialize(changeRecord.getRequestBody());
+            this.requestBody = CommonDomainRegistry.getCustomObjectSerializer().deserialize(changeRecord.getRequestBody(), Object.class);
         }
     }
 }

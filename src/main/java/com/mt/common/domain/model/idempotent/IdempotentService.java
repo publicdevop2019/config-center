@@ -64,14 +64,19 @@ public class IdempotentService {
     }
 
     public <T> void idempotent(@Nullable DomainId domainId, Object command, String changeId, Consumer<CreateChangeRecordCommand> wrapper, Class<T> clazz) {
-        if (!changeAlreadyExist(changeId, clazz) && !changeAlreadyRevoked(changeId, clazz)) {
+        if (changeAlreadyExist(changeId, clazz) && changeAlreadyRevoked(changeId, clazz)) {
+        } else if (changeAlreadyExist(changeId, clazz) && !changeAlreadyRevoked(changeId, clazz)) {
+        } else if (!changeAlreadyExist(changeId, clazz) && changeAlreadyRevoked(changeId, clazz)) {
+            saveChangeRecord(command, changeId, OperationType.PUT, "Already Revoked", null, null, clazz);
+        } else {
             CreateChangeRecordCommand changeRecordCommand = saveChangeRecord(command, changeId, OperationType.PUT, "id:" + (domainId != null ? domainId.getDomainId() : ""), null, null, clazz);
             wrapper.accept(changeRecordCommand);
         }
     }
 
     public <T> void idempotentRollback(String changeId, Consumer<ChangeRecord> wrapper, Class<T> clazz) {
-        if (changeAlreadyExist(changeId, clazz) && !changeAlreadyRevoked(changeId, clazz)) {
+        if (changeAlreadyExist(changeId, clazz) && changeAlreadyRevoked(changeId, clazz)) {
+        } else if (changeAlreadyExist(changeId, clazz) && !changeAlreadyRevoked(changeId, clazz)) {
             String entityType = getEntityName(clazz);
             SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep1 = idempotentApplicationService().changeRecords(ChangeRecord.CHANGE_ID + ":" + changeId + "," + ChangeRecord.ENTITY_TYPE + ":" + entityType);
             List<ChangeRecord> data = appChangeRecordCardRepSumPagedRep1.getData();
@@ -81,6 +86,9 @@ public class IdempotentService {
             log.debug("start of rollback change /w id {}", changeId);
             ChangeRecord appChangeRecordCardRep = data.get(0);
             wrapper.accept(appChangeRecordCardRep);
+        } else if (!changeAlreadyExist(changeId, clazz) && changeAlreadyRevoked(changeId, clazz)) {
+        } else {
+            saveChangeRecordRollback("Change Not Found", changeId + CHANGE_REVOKED, OperationType.EMPTY_OPT, null, null, null, clazz);
         }
     }
 
@@ -111,6 +119,21 @@ public class IdempotentService {
         changeRecord.setReplacedVersion(toBeReplaced);
         changeRecord.setDeletedIds(deletedIds);
         changeRecord.setRequestBody(requestBody);
+        idempotentApplicationService().create(changeRecord);
+        return changeRecord;
+    }
+
+    protected <T> CreateChangeRecordCommand saveChangeRecordRollback(Object requestBody, String changeId, OperationType operationType, String query, Set<String> deletedIds, Object toBeReplaced, Class<T> clazz) {
+        CreateChangeRecordCommand changeRecord = new CreateChangeRecordCommand();
+        changeRecord.setChangeId(changeId);
+        changeRecord.setEntityType(getEntityName(clazz));
+        changeRecord.setServiceBeanName(this.getClass().getName());
+        changeRecord.setOperationType(operationType);
+        changeRecord.setQuery(query);
+        changeRecord.setReplacedVersion(toBeReplaced);
+        changeRecord.setDeletedIds(deletedIds);
+        changeRecord.setRequestBody(requestBody);
+        changeRecord.setRollbackChangeNotFound(true);
         idempotentApplicationService().create(changeRecord);
         return changeRecord;
     }

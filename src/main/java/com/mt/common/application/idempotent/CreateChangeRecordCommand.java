@@ -12,10 +12,8 @@ public class CreateChangeRecordCommand {
 
     private String changeId;
     private String entityType;
-    private String serviceBeanName;
     private OperationType operationType;
     private String query;
-    private Object replacedVersion;
     private Object requestBody;
     private Set<String> deletedIds;
     private boolean rollbackChangeNotFound = false;

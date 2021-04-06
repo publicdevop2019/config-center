@@ -42,7 +42,7 @@ public class IdempotentService {
             DomainEventPublisher.instance().publish(new HangingTxDetected(domainId, changeId));
             return "revoked";
         } else {
-            saveChangeRecord(command, changeId, OperationType.POST, "id:" + domainId.getDomainId(), null, null, clazz);
+            saveChangeRecord(command, changeId, OperationType.POST, "id:" + domainId.getDomainId(), null, clazz);
             return wrapper.get().getDomainId();
         }
     }
@@ -51,14 +51,15 @@ public class IdempotentService {
         String entityType = getEntityName(clazz);
         if (changeAlreadyExist(changeId, clazz) && changeAlreadyRevoked(changeId, clazz)) {
             SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep = idempotentApplicationService().changeRecords(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + entityType);
-            return appChangeRecordCardRepSumPagedRep.getData().get(0).getDeletedIds();
+            return appChangeRecordCardRepSumPagedRep.getData().get(0).getUpdatedIds();
         } else if (changeAlreadyExist(changeId, clazz) && !changeAlreadyRevoked(changeId, clazz)) {
             SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep = idempotentApplicationService().changeRecords(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + entityType);
-            return appChangeRecordCardRepSumPagedRep.getData().get(0).getDeletedIds();
+            return appChangeRecordCardRepSumPagedRep.getData().get(0).getUpdatedIds();
         } else if (!changeAlreadyExist(changeId, clazz) && changeAlreadyRevoked(changeId, clazz)) {
             return Collections.emptySet();
         } else {
-            CreateChangeRecordCommand changeRecordCommand = saveChangeRecord(null, changeId, OperationType.DELETE_BY_QUERY, query, null, null, clazz);
+            CreateChangeRecordCommand changeRecordCommand = saveChangeRecord(null, changeId, OperationType.DELETE_BY_QUERY, query, null, clazz);
+            //@todo find a better way to get updated ids, current solution requires caller manually update
             return wrapper.apply(changeRecordCommand).stream().map(DomainId::getDomainId).collect(Collectors.toSet());
         }
     }
@@ -67,9 +68,9 @@ public class IdempotentService {
         if (changeAlreadyExist(changeId, clazz) && changeAlreadyRevoked(changeId, clazz)) {
         } else if (changeAlreadyExist(changeId, clazz) && !changeAlreadyRevoked(changeId, clazz)) {
         } else if (!changeAlreadyExist(changeId, clazz) && changeAlreadyRevoked(changeId, clazz)) {
-            saveChangeRecord(command, changeId, OperationType.PUT, "Already Revoked", null, null, clazz);
+            saveChangeRecord(command, changeId, OperationType.PUT, "Already Revoked", null, clazz);
         } else {
-            CreateChangeRecordCommand changeRecordCommand = saveChangeRecord(command, changeId, OperationType.PUT, "id:" + (domainId != null ? domainId.getDomainId() : ""), null, null, clazz);
+            CreateChangeRecordCommand changeRecordCommand = saveChangeRecord(command, changeId, OperationType.PUT,  (domainId != null ? "id:" + domainId.getDomainId() : ""), null, clazz);
             wrapper.accept(changeRecordCommand);
         }
     }
@@ -88,7 +89,7 @@ public class IdempotentService {
             wrapper.accept(appChangeRecordCardRep);
         } else if (!changeAlreadyExist(changeId, clazz) && changeAlreadyRevoked(changeId, clazz)) {
         } else {
-            saveChangeRecordRollback("Change Not Found", changeId + CHANGE_REVOKED, OperationType.EMPTY_OPT, null, null, null, clazz);
+            saveChangeRecordRollback(changeId + CHANGE_REVOKED, clazz);
         }
     }
 
@@ -109,33 +110,28 @@ public class IdempotentService {
         return split[split.length - 1];
     }
 
-    protected <T> CreateChangeRecordCommand saveChangeRecord(Object requestBody, String changeId, OperationType operationType, String query, Set<String> deletedIds, Object toBeReplaced, Class<T> clazz) {
+    protected <T> CreateChangeRecordCommand saveChangeRecord(Object requestBody, String changeId, OperationType operationType, String query, Set<String> updatedIds, Class<T> clazz) {
         CreateChangeRecordCommand changeRecord = new CreateChangeRecordCommand();
         changeRecord.setChangeId(changeId);
         changeRecord.setEntityType(getEntityName(clazz));
-        changeRecord.setServiceBeanName(this.getClass().getName());
         changeRecord.setOperationType(operationType);
         changeRecord.setQuery(query);
-        changeRecord.setReplacedVersion(toBeReplaced);
-        changeRecord.setDeletedIds(deletedIds);
+        changeRecord.setDeletedIds(updatedIds);
         changeRecord.setRequestBody(requestBody);
         idempotentApplicationService().create(changeRecord);
         return changeRecord;
     }
 
-    protected <T> CreateChangeRecordCommand saveChangeRecordRollback(Object requestBody, String changeId, OperationType operationType, String query, Set<String> deletedIds, Object toBeReplaced, Class<T> clazz) {
+    protected <T> void saveChangeRecordRollback(String changeId, Class<T> clazz) {
         CreateChangeRecordCommand changeRecord = new CreateChangeRecordCommand();
         changeRecord.setChangeId(changeId);
         changeRecord.setEntityType(getEntityName(clazz));
-        changeRecord.setServiceBeanName(this.getClass().getName());
-        changeRecord.setOperationType(operationType);
-        changeRecord.setQuery(query);
-        changeRecord.setReplacedVersion(toBeReplaced);
-        changeRecord.setDeletedIds(deletedIds);
-        changeRecord.setRequestBody(requestBody);
+        changeRecord.setOperationType(OperationType.EMPTY_OPT);
+        changeRecord.setQuery((String) null);
+        changeRecord.setDeletedIds(null);
+        changeRecord.setRequestBody("Change Not Found");
         changeRecord.setRollbackChangeNotFound(true);
         idempotentApplicationService().create(changeRecord);
-        return changeRecord;
     }
 
     private ChangeRecordApplicationService idempotentApplicationService() {

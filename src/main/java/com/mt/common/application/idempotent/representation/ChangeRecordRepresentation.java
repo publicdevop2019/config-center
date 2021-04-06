@@ -17,7 +17,6 @@ public class ChangeRecordRepresentation {
 
     private String changeId;
     private String entityType;
-    private String serviceBeanName;
 
     private Set<String> deletedIds;
     private OperationType operationType;
@@ -31,11 +30,9 @@ public class ChangeRecordRepresentation {
         this.id = changeRecord.getId();
         this.changeId = changeRecord.getChangeId();
         this.entityType = changeRecord.getEntityType();
-        this.serviceBeanName = changeRecord.getServiceBeanName();
         this.operationType = changeRecord.getOperationType();
         this.query = changeRecord.getQuery();
-        this.deletedIds = changeRecord.getDeletedIds();
-        this.replacedVersion = CommonDomainRegistry.getCustomObjectSerializer().deserialize(changeRecord.getReplacedVersion(), Object.class);
+        this.deletedIds = changeRecord.getUpdatedIds();
         if (changeRecord.getOperationType().equals(OperationType.PATCH_BY_ID)) {
             try {
                 this.requestBody = om.readValue(changeRecord.getRequestBody(), JsonPatch.class);

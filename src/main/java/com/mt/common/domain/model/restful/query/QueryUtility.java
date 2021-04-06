@@ -43,7 +43,11 @@ public class QueryUtility {
         //add soft delete
         context.getPredicates().add(new NotDeletedClause<T>().getWhereClause(context.getCriteriaBuilder(), context.getRoot()));
         Optional.ofNullable(context.getCountPredicates()).ifPresent(e -> e.add(new NotDeletedClause<T>().getWhereClause(context.getCriteriaBuilder(), context.getCountRoot())));
+        return nativePagedQuery(queryCriteria, context);
+    }
 
+    //without soft delete check
+    public static <T> SumPagedRep<T> nativePagedQuery(QueryCriteria queryCriteria, QueryContext<T> context) {
         Predicate and = context.getCriteriaBuilder().and(context.getPredicates().toArray(new Predicate[0]));
         List<T> select = QueryUtility.select(and, context.getOrder(), queryCriteria.getPageConfig(), context);
         Long aLong = null;

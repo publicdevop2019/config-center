@@ -4,19 +4,26 @@ import com.mt.common.domain.model.restful.query.PageConfig;
 import com.mt.common.domain.model.restful.query.QueryConfig;
 import com.mt.common.domain.model.restful.query.QueryCriteria;
 import com.mt.common.domain.model.restful.query.QueryUtility;
-import com.mt.common.domain.model.validate.Validator;
 import lombok.Getter;
 
-import java.util.Map;
+import java.util.*;
 
 @Getter
 public class ChangeRecordQuery extends QueryCriteria {
     private String entityType;
-    private String changeId;
+    private Set<String> changeIds;
     private final ChangeRecordSort changeRecordSort;
 
     public ChangeRecordQuery(String queryParam) {
         updateQueryParam(queryParam);
+        setPageConfig(PageConfig.defaultConfig());
+        setQueryConfig(QueryConfig.skipCount());
+        changeRecordSort = ChangeRecordSort.instance;
+    }
+
+    public ChangeRecordQuery(String queryParam, String entityType) {
+        updateQueryParam(queryParam);
+        this.entityType = entityType;
         setPageConfig(PageConfig.defaultConfig());
         setQueryConfig(QueryConfig.skipCount());
         changeRecordSort = ChangeRecordSort.instance;
@@ -32,7 +39,9 @@ public class ChangeRecordQuery extends QueryCriteria {
     private void updateQueryParam(String queryParam) {
         Map<String, String> stringStringMap = QueryUtility.parseQuery(queryParam);
         entityType = stringStringMap.get("entityType");
-        changeId = stringStringMap.get("changeId");
+        Optional.ofNullable(stringStringMap.get("changeId")).ifPresent(e -> {
+            changeIds = new HashSet<>(List.of(e.split("\\.")));
+        });
     }
 
     @Getter

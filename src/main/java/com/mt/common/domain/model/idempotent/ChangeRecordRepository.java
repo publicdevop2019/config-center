@@ -5,6 +5,6 @@ import com.mt.common.domain.model.restful.SumPagedRep;
 public interface ChangeRecordRepository {
     SumPagedRep<ChangeRecord> changeRecordsOfQuery(ChangeRecordQuery changeRecordQuery);
 
-    void addIfCounterChangeNotExist(ChangeRecord changeRecord, String counterChangeId);
+    void add(ChangeRecord changeRecord);
 
 }

@@ -5,6 +5,7 @@ import com.mt.common.domain.model.restful.SumPagedRep;
 import com.mt.common.domain.model.sql.clause.NotDeletedClause;
 import com.mt.common.domain.model.sql.exception.UnsupportedQueryException;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 
+@Slf4j
 @Component
 public class QueryUtility {
     private static EntityManager em;
@@ -81,17 +83,19 @@ public class QueryUtility {
     }
 
     public static Map<String, String> parseQuery(String rawQuery) {
-        Map<String, String> parsed = new HashMap<>();
-        if (rawQuery != null) {
+        return Optional.ofNullable(rawQuery).map(e -> {
+            Map<String, String> parsed = new HashMap<>();
             String[] split = rawQuery.split(",");
             for (String str : split) {
                 String[] split1 = str.split(":");
-                if (split1.length != 2)
+                if (split1.length != 2) {
+                    log.info("unable to parse query string {}", rawQuery);
                     throw new QueryParseException();
+                }
                 parsed.put(split1[0], split1[1]);
             }
-        }
-        return parsed;
+            return parsed;
+        }).orElseGet(Collections::emptyMap);
     }
 
     public static <T> QueryContext<T> prepareContext(Class<T> clazz, QueryCriteria queryCriteria) {

@@ -1,6 +1,5 @@
 package com.mt.common.application.idempotent;
 
-import com.mt.common.CommonConstant;
 import com.mt.common.domain.CommonDomainRegistry;
 import com.mt.common.domain.model.idempotent.ChangeRecord;
 import com.mt.common.domain.model.idempotent.ChangeRecordQuery;
@@ -21,11 +20,7 @@ public class ChangeRecordApplicationService {
     @Transactional
     public void create(CreateChangeRecordCommand changeRecord) {
         long id = CommonDomainRegistry.getUniqueIdGeneratorService().id();
-        ChangeRecord changeRecord1 = new ChangeRecord(id, changeRecord);
-        if (changeRecord.isRollbackChangeNotFound()) {
-            CommonDomainRegistry.getChangeRecordRepository().addIfCounterChangeNotExist(changeRecord1, changeRecord.getChangeId() + CommonConstant.CHANGE_REVOKED);
-        } else {
-            CommonDomainRegistry.getChangeRecordRepository().addIfCounterChangeNotExist(changeRecord1, changeRecord.getChangeId().replace(CommonConstant.CHANGE_REVOKED, ""));
-        }
+        ChangeRecord changeRecord1 = new ChangeRecord(id, changeRecord.getChangeId(), changeRecord.getEntityType(), changeRecord.getReturnValue());
+        CommonDomainRegistry.getChangeRecordRepository().add(changeRecord1);
     }
 }

@@ -6,6 +6,6 @@ import lombok.Data;
 public class CreateChangeRecordCommand {
 
     private String changeId;
-    private String entityType;
+    private String aggregateName;
     private String returnValue;
 }

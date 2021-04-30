@@ -20,7 +20,7 @@ public class ChangeRecordApplicationService {
     @Transactional
     public void create(CreateChangeRecordCommand changeRecord) {
         long id = CommonDomainRegistry.getUniqueIdGeneratorService().id();
-        ChangeRecord changeRecord1 = new ChangeRecord(id, changeRecord.getChangeId(), changeRecord.getEntityType(), changeRecord.getReturnValue());
+        ChangeRecord changeRecord1 = new ChangeRecord(id, changeRecord.getChangeId(), changeRecord.getAggregateName(), changeRecord.getReturnValue());
         CommonDomainRegistry.getChangeRecordRepository().add(changeRecord1);
     }
 }

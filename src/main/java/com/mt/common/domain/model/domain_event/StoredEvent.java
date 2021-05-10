@@ -27,7 +27,7 @@ public class StoredEvent implements Serializable {
     public StoredEvent(DomainEvent aDomainEvent) {
         this.eventBody = CommonDomainRegistry.getCustomObjectSerializer().serialize(aDomainEvent);
         this.timestamp = aDomainEvent.getTimestamp();
-        this.name = aDomainEvent.getClass().getName();
+        this.name = aDomainEvent.getName();
         this.internal = aDomainEvent.isInternal();
         this.topic = aDomainEvent.getTopic();
     }

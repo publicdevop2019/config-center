@@ -13,7 +13,7 @@ public class EurekaHelper {
     private EurekaClient discoveryClient;
 
     public String getApplicationUrl(String appName) {
-        Application application1 = discoveryClient.getApplication(appName);
+        Application application1 = discoveryClient.getApplication(appName.toUpperCase());
         String homePageUrl = application1.getInstances().get(0).getHomePageUrl();
         log.debug("application {} URL resolved as {}", appName, homePageUrl);
         return homePageUrl;

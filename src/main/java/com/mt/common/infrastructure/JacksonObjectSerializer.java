@@ -2,7 +2,9 @@ package com.mt.common.infrastructure;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.github.fge.jsonpatch.JsonPatch;
@@ -63,6 +65,8 @@ public class JacksonObjectSerializer implements CustomObjectSerializer {
     @Override
     public <T> T deserialize(String str, Class<T> clazz) {
         try {
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            objectMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
             return objectMapper.readValue(str, clazz);
         } catch (IOException e) {
             log.error("error during object mapper deserialize", e);
@@ -90,6 +94,8 @@ public class JacksonObjectSerializer implements CustomObjectSerializer {
         CollectionType javaType = objectMapper.getTypeFactory()
                 .constructCollectionType(List.class, clazz);
         try {
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            objectMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
             Collection<T> o = objectMapper.readValue(str, javaType);
             if (o == null)
                 return Collections.emptyList();

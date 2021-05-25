@@ -17,6 +17,7 @@ public class Validator {
     private static final String DEC_GREATER_OR_EQUAL_TO_MSG = "condition not match decimal greaterThanOrEqualTo";
     private static final String DEC_GREATER_TO_MSG = "condition not match decimal greaterThan";
     private static final String EMAIL_MSG = "condition not match isValidEmail";
+    private static final String NUM_EQUAL_TO_MSG = "condition not match int equals";
     private static final String URL_MSG = "condition not match isHttpUrl";
     private static final String HAS_TEXT_MSG = "condition not match hasText";
     private static final String GREATER_OR_EQUAL_TO_MSG = "condition not match lengthGreaterThanOrEqualTo";
@@ -127,6 +128,21 @@ public class Validator {
         if (value.compareTo(min) < 0) {
             throw new IllegalArgumentException(message == null ? DEC_GREATER_OR_EQUAL_TO_MSG : message);
         }
+    }
+
+    public static void equalTo(int value, int target, @Nullable String message) {
+        if (value != target)
+            throw new IllegalArgumentException(message == null ? NUM_EQUAL_TO_MSG : message);
+    }
+
+    public static void equalTo(int value, int target) {
+        equalTo(value, target, null);
+    }
+    public static void sizeEqualTo(Collection<?> value, Collection<?> target) {
+        equalTo(value.size(), target.size(), null);
+    }
+    public static void sizeEqualTo(Collection<?> value, Collection<?> target,@Nullable String message) {
+        equalTo(value.size(), target.size(), message);
     }
 
     public static void greaterThan(BigDecimal value, BigDecimal min) {

@@ -28,20 +28,20 @@ public interface SpringDataJpaChangeRecordRepository extends ChangeRecordReposit
     @Modifying
     @Query(
             value = "insert into change_record (id, change_id,entity_type,return_value) select" +
-                    " :id, :changeId, :entityType, :return_value" +
+                    " :id, :changeId, :entityType, :returnValue" +
                     " from dual where not exists (select id from change_record where change_id = :counterChangeId and entity_type = :entityType)"
             , nativeQuery = true
     )
     Integer addIfNotCancelled(
             @Param("id") long id,
-            @Param("changeId") String age,
+            @Param("changeId") String changeId,
             @Param("entityType") String entityType,
             @Param("counterChangeId") String counterChangeId,
-            @Param("returnValue") String createdBy
+            @Param("returnValue") String returnValue
     );
 
     default void add(ChangeRecord changeRecord) {
-        Integer integer = addIfNotCancelled(changeRecord.getId(), changeRecord.getChangeId(), changeRecord.getEntityType(), changeRecord.getChangeId(), changeRecord.getReturnValue());
+        Integer integer = addIfNotCancelled(changeRecord.getId(), changeRecord.getChangeId(), changeRecord.getEntityType(), changeRecord.getChangeId()+"_cancelled", changeRecord.getReturnValue());
         if (!integer.equals(1)) {
             throw new IllegalArgumentException("unable to insert change, expect 1 but got " + integer);
         }

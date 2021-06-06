@@ -18,9 +18,27 @@ public class ChangeRecordApplicationService {
     }
 
     @Transactional
-    public void create(CreateChangeRecordCommand changeRecord) {
+    public void createForward(CreateChangeRecordCommand changeRecord) {
         long id = CommonDomainRegistry.getUniqueIdGeneratorService().id();
         ChangeRecord changeRecord1 = new ChangeRecord(id, changeRecord.getChangeId(), changeRecord.getAggregateName(), changeRecord.getReturnValue());
-        CommonDomainRegistry.getChangeRecordRepository().add(changeRecord1);
+        CommonDomainRegistry.getChangeRecordRepository().addForwardChangeRecord(changeRecord1);
+    }
+    @Transactional
+    public void createEmptyForward(CreateChangeRecordCommand changeRecord) {
+        long id = CommonDomainRegistry.getUniqueIdGeneratorService().id();
+        ChangeRecord changeRecord1 = new ChangeRecord(id, changeRecord.getChangeId(), changeRecord.getAggregateName(), changeRecord.getReturnValue());
+        CommonDomainRegistry.getChangeRecordRepository().addEmptyForwardChangeRecord(changeRecord1);
+    }
+    @Transactional
+    public void createReverse(CreateChangeRecordCommand changeRecord) {
+        long id = CommonDomainRegistry.getUniqueIdGeneratorService().id();
+        ChangeRecord changeRecord1 = new ChangeRecord(id, changeRecord.getChangeId(), changeRecord.getAggregateName(), changeRecord.getReturnValue());
+        CommonDomainRegistry.getChangeRecordRepository().addReverseChangeRecord(changeRecord1);
+    }
+    @Transactional
+    public void createEmptyReverse(CreateChangeRecordCommand changeRecord) {
+        long id = CommonDomainRegistry.getUniqueIdGeneratorService().id();
+        ChangeRecord changeRecord1 = new ChangeRecord(id, changeRecord.getChangeId(), changeRecord.getAggregateName(), changeRecord.getReturnValue());
+        CommonDomainRegistry.getChangeRecordRepository().addEmptyReverseChangeRecord(changeRecord1);
     }
 }

@@ -20,23 +20,54 @@ import static com.mt.common.domain.model.idempotent.ChangeRecord_.ENTITY_TYPE;
 public class IdempotentService {
 
     public <T> String idempotent(String changeId, Function<CreateChangeRecordCommand, String> function, String aggregateName) {
-        SumPagedRep<ChangeRecord> appChangeRecordCardRepSumPagedRep = CommonApplicationServiceRegistry.getChangeRecordApplicationService().changeRecords(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + aggregateName);
-        Optional<ChangeRecord> first = appChangeRecordCardRepSumPagedRep.findFirst();
-        if (first.isPresent()) {
-            DomainEventPublisher.instance().publish(new HangingTxDetected(changeId));
-            return first.get().getReturnValue();
+        SumPagedRep<ChangeRecord> forwardChanges = CommonApplicationServiceRegistry
+                .getChangeRecordApplicationService()
+                .changeRecords(CHANGE_ID + ":" + changeId + "," + ENTITY_TYPE + ":" + aggregateName);
+        if (isCancelChange(changeId)) {
+            Optional<ChangeRecord> forwardChange = forwardChanges.findFirst();
+            if (forwardChange.isPresent()) {
+                CreateChangeRecordCommand command = createChangeRecordCommand(changeId, aggregateName, null);
+                CommonApplicationServiceRegistry.getChangeRecordApplicationService().createReverse(command);
+                return function.apply(command);
+            } else {
+                //change not found
+                DomainEventPublisher.instance().publish(new HangingTxDetected(changeId));
+                CreateChangeRecordCommand command = createChangeRecordCommand(changeId, aggregateName, null);
+                CommonApplicationServiceRegistry.getChangeRecordApplicationService().createEmptyReverse(command);
+                return null;
+            }
         } else {
-            CreateChangeRecordCommand createChangeRecordCommand = saveChangeRecord(changeId, aggregateName, null);
-            return function.apply(createChangeRecordCommand);
+            SumPagedRep<ChangeRecord> reverseChanges = CommonApplicationServiceRegistry
+                    .getChangeRecordApplicationService()
+                    .changeRecords(CHANGE_ID + ":" + changeId + "_cancelled" + "," + ENTITY_TYPE + ":" + aggregateName);
+            Optional<ChangeRecord> reverseChange = reverseChanges.findFirst();
+            if (reverseChange.isPresent()) {
+                //change has been cancelled, perform null operation
+                CreateChangeRecordCommand command = createChangeRecordCommand(changeId, aggregateName, null);
+                CommonApplicationServiceRegistry.getChangeRecordApplicationService().createEmptyForward(command);
+                return null;
+            }
+            Optional<ChangeRecord> forwardChange = forwardChanges.findFirst();
+            if (forwardChange.isPresent()) {
+                DomainEventPublisher.instance().publish(new HangingTxDetected(changeId));
+                return forwardChange.get().getReturnValue();
+            } else {
+                CreateChangeRecordCommand command = createChangeRecordCommand(changeId, aggregateName, null);
+                CommonApplicationServiceRegistry.getChangeRecordApplicationService().createForward(command);
+                return function.apply(command);
+            }
         }
     }
 
-    private <T> CreateChangeRecordCommand saveChangeRecord(String changeId, String aggregateName, @Nullable String returnValue) {
+    private boolean isCancelChange(String changeId) {
+        return changeId.contains("_cancelled");
+    }
+
+    private CreateChangeRecordCommand createChangeRecordCommand(String changeId, String aggregateName, @Nullable String returnValue) {
         CreateChangeRecordCommand changeRecord = new CreateChangeRecordCommand();
         changeRecord.setChangeId(changeId);
         changeRecord.setAggregateName(aggregateName);
         changeRecord.setReturnValue(returnValue);
-        CommonApplicationServiceRegistry.getChangeRecordApplicationService().create(changeRecord);
         return changeRecord;
     }
 
